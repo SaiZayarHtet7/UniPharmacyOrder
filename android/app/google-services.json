@@ -1,0 +1,85 @@
+{
+  "project_info": {
+    "project_number": "1087456282658",
+    "firebase_url": "https://unipharmacy-a5219.firebaseio.com",
+    "project_id": "unipharmacy-a5219",
+    "storage_bucket": "unipharmacy-a5219.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1087456282658:android:3260772252e0ad7130627b",
+        "android_client_info": {
+          "package_name": "com.example.uni_pharmacy_order"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1087456282658-0f2c3qlducghtelvib96u7h7vpef9bfb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.uni_pharmacy_order",
+            "certificate_hash": "dc152babd73ea6b3d1ce036aca1c76a6cddaf788"
+          }
+        },
+        {
+          "client_id": "1087456282658-jka4sogq5i8822i5hcv2avnbvrjumijn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfmRKid2j5wpv0_0km7SdGFLcvtDkesQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1087456282658-jka4sogq5i8822i5hcv2avnbvrjumijn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1087456282658:android:f49ecc18335acf1930627b",
+        "android_client_info": {
+          "package_name": "szyh.freelance.com.uni_pharmacy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1087456282658-sg9g222ftv5e6kngajforg8s3ehs0bcc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "szyh.freelance.com.uni_pharmacy",
+            "certificate_hash": "dc152babd73ea6b3d1ce036aca1c76a6cddaf788"
+          }
+        },
+        {
+          "client_id": "1087456282658-jka4sogq5i8822i5hcv2avnbvrjumijn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfmRKid2j5wpv0_0km7SdGFLcvtDkesQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1087456282658-jka4sogq5i8822i5hcv2avnbvrjumijn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
