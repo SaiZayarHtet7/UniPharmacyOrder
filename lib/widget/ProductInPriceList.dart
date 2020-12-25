@@ -12,7 +12,8 @@ Widget ProductInPriceList(String productId, String priceKind){
           return Text('Something went wrong');
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Text("Loading");
+          return  Container(
+              width:100,child: Text("Loading",textAlign: TextAlign.right,));
         }
         return new ListView(
           shrinkWrap: true,

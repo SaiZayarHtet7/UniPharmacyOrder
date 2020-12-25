@@ -40,6 +40,7 @@ class _PricePageState extends State<PricePage> {
 
   String userName,userId,userToken,newCategory,searchName,notiCountStr,messageNoti;
   final ScrollController scrollController = ScrollController();
+  ScrollController listController = new ScrollController();
   List<String> categoryList=new List();
   bool showSearchBar;
   Future<bool> _onWillPop() async {
@@ -115,15 +116,11 @@ class _PricePageState extends State<PricePage> {
       });
     });
   }
-
   @override
   void initState() {
     // TODO: implement initState
-    setState(() {
-      Firebase.initializeApp();
-    });
-    super.initState();
     fetchData();
+    super.initState();
   }
   @override
   Widget build(BuildContext context) {
@@ -218,133 +215,140 @@ class _PricePageState extends State<PricePage> {
               child: Column(
                 children: [
                   SizedBox(height: 5.0,),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                          child: Container(
-                            color: Colors.white,
-                            padding: EdgeInsets.all(0),
-                            height: 50,
-                            child: DropdownButtonFormField<String>(
-                        autovalidate: true,
-                        decoration:  InputDecoration(
-                              hintText: 'Category',
-                              enabledBorder: new OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: new BorderSide(color: Colors.black,width: 1),
-                              ),
-                              focusedBorder: new OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: new BorderSide(color: Colors.black,width: 1),),
-                              border: new OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: new BorderSide(color: Colors.black,width: 1),
-                              )
-                        ) ,
-                        value:newCategory,
-                        // value: categorySelected,
-                        items: categoryList.map((label){
-                            return DropdownMenuItem(
-                              child: Text(
-                                label,
-                                style:
-                                TextStyle(height: -0.0,color: Colors.black,fontFamily: Constants.PrimaryFont),
-                              ),
-                              value: label,
-                            );
-                        }
-                        ).toList(),
-                        onChanged: (value) {
-                            // if(productDescription=="") {
-                            //   setState(() => newCategory = value);
-                            // }else{
-                            setState(() { newCategory = value.toString();
-                            print(newCategory);});
-                            FocusScope.of(context).requestFocus(FocusNode());
-                            // }
-                        },
+                  Container(
+                    color: Colors.white,
+                    padding: EdgeInsets.all(0),
+                    height: 60,
+                    child: DropdownButtonFormField<String>(
+                    autovalidate: true,
+                    decoration:  InputDecoration(
+                      hintText: 'Category',
+                      enabledBorder: new OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: new BorderSide(color: Colors.black,width: 1),
                       ),
-                          )),
-                      SizedBox(width: 10,),
-
-                    ],
+                      focusedBorder: new OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: new BorderSide(color: Colors.black,width: 1),),
+                      border: new OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: new BorderSide(color: Colors.black,width: 1),
+                      )
+                    ) ,
+                    value:newCategory,
+                    // value: categorySelected,
+                    items: categoryList.map((label){
+                    return DropdownMenuItem(
+                      child: Text(
+                        label,
+                        style:
+                        TextStyle(height: -0.0,color: Colors.black,fontFamily: Constants.PrimaryFont),
+                      ),
+                      value: label,
+                    );
+                    }
+                    ).toList(),
+                    onChanged: (value) {
+                    // if(productDescription=="") {
+                    //   setState(() => newCategory = value);
+                    // }else{
+                    setState(() { newCategory = value.toString();
+                    print(newCategory);});
+                    FocusScope.of(context).requestFocus(FocusNode());
+                    // }
+                    },
+                  ),
                   ),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     controller: scrollController,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10,right: 10,top: 20,bottom: 20),
-                      child: Scrollbar(
-                        controller: scrollController,
-                        isAlwaysShown: true,
-                        child: StreamBuilder<QuerySnapshot>(
-                            stream:FirestoreService().getProduct(newCategory, searchName),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<QuerySnapshot> snapshot) {
+                    child: Container(
+                      padding: const EdgeInsets.only(left: 10,right: 10,top: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(width:180, child: Center(child: TextData('ဆေးပစ္စည်း'))),
+                          SizedBox(width:100,child: Text('လက်လီ',textAlign: TextAlign.right,style: TextStyle(color: Colors.black,fontFamily: Constants.PrimaryFont),)),
+                          SizedBox(width:100,child: Text('လက်ကား',textAlign: TextAlign.right,style: TextStyle(color: Colors.black,fontFamily: Constants.PrimaryFont),)),
+                          SizedBox(width:100,child: Text('အထူးစျေး',textAlign: TextAlign.right,style: TextStyle(color: Colors.black,fontFamily: Constants.PrimaryFont),)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  new NotificationListener<ScrollNotification>(
+                    onNotification: (ScrollNotification scrollInfo){
+
+                      if(scrollInfo.depth==1){
+
+                      }else {
+                        scrollController.jumpTo(scrollInfo.metrics.pixels);
+                      }
+                      return false;
+                    },
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Container(
+                        width:500,
+                          height:MediaQuery.of(context).size.height/1.4,
+                          padding: const EdgeInsets.only(left: 10,right: 10,top: 20,bottom: 10),
+                          child: StreamBuilder<QuerySnapshot>(
+                            stream: FirestoreService().getProduct(newCategory, searchName),
+                            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                               if (snapshot.hasError) {
                                 return Text('Something went wrong');
                               }
                               if (snapshot.connectionState == ConnectionState.waiting) {
-                                return Center(child: CircularProgressIndicator());
-                              }
-                              if(snapshot.hasData){
                                 return Container(
-                                  child:DataTable(
-                                    showBottomBorder: true,
-                                    horizontalMargin: 3,
-                                    columnSpacing: 10,
-                                    dataRowHeight: 60,
-                                    onSelectAll:(value) {
-                                      print('all');
-                                    },
-                                    columns: [
-                                      DataColumn(label: SizedBox(width:180, child: Center(child: TextData('ဆေးပစ္စည်း')))),
-                                      DataColumn(label: SizedBox(width:100,child: Center(child: TextData('လက်လီ')))),
-                                      DataColumn(label: SizedBox(width:100, child: Center(child: TextData('လက်ကား')))),
-                                      DataColumn(label: SizedBox(width:100, child: Center(child: TextData('အထူးစျေး')))),
-                                    ],
-                                    rows: snapshot.data.docs.map((data) {
-                                      return DataRow(
-                                        selected: false,
-                                        onSelectChanged: (v){
-                                          Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductDetail(data.data()['product_name'],data.data()['product_image'],  data.data()['product_id'], data.data()['description'])));
-                                        },
-                                          cells: [
-                                            DataCell(Container(width:180,
-                                                padding: EdgeInsets.only(left: 10.0),
-                                                child: Text(data.data()['product_name'],style: TextStyle(color: Constants.thirdColor,fontFamily: Constants.PrimaryFont,),textAlign: TextAlign.left,))),
-                                            DataCell(Center(
-                                              child: Container(
-                                                width:80,
-                                                  height:150,
-                                                  child: ProductInPriceList(data.data()['product_id'],'လက်လီစျေး')),
-                                            )),
-                                            DataCell(Center(
-                                              child: Container(
-                                                  width:80,
-                                                  height:150,
-                                                  child: ProductInPriceList(data.data()['product_id'],'လက်ကားစျေး')),
-                                            )),
-                                            DataCell(Center(
-                                              child: Container(
-                                                  width:80,
-                                                  height:150,
-                                                  child: ProductInPriceList(data.data()['product_id'],'အထူးစျေး')),
-                                            )),
-                                          ]
-                                      );
-                                    },
-                                    ).toList(),
-                                  ),
-                                );
-                              }else{
-                                return TitleTextColor("No data", Constants.thirdColor);
+                                  height: MediaQuery.of(context).size.height/2,
+                                  width:MediaQuery.of(context).size.width,
+                                child: Center(child: CircularProgressIndicator(backgroundColor: Constants.thirdColor,)),);
                               }
-                            }),
+                              return new ListView(
+                                controller: listController,
+
+                                shrinkWrap: true,
+                                children: snapshot.data.docs.map((DocumentSnapshot document) {
+                                  return InkWell(
+                                    onTap: (){
+                                      Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductDetail(document.data()['product_name'],document.data()['product_image'],  document.data()['product_id'], document.data()['description'])));
+                                    },
+                                    child: Column(
+                                      children: [
+                                        Container(padding: EdgeInsets.only(top: 10.0,bottom: 15.0),
+                                          child: Row(
+                                            children: [
+                                              Container(width:180,
+                                                  child: Text(document.data()['product_name'],style: TextStyle(color: Constants.thirdColor,fontFamily: Constants.PrimaryFont,),textAlign: TextAlign.left,)),
+                                              Center(
+                                                child: Container(
+                                                    width:100,
+                                                    child: ProductInPriceList(document.data()['product_id'],'လက်လီစျေး')),
+                                              ),
+                                              Center(
+                                                child: Container(
+                                                    width:100,
+                                                    child: ProductInPriceList(document.data()['product_id'],'လက်ကားစျေး')),
+                                              ),
+                                              Center(
+                                                child: Container(
+                                                    width:100,
+                                                    child: ProductInPriceList(document.data()['product_id'],'အထူးစျေး')),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Divider(height: 2.0,thickness: 0.5,color: Colors.grey,)
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          )
                       ),
                     ),
                   ),
+
                 ],
               ),
             ),
@@ -838,3 +842,84 @@ class _HeaderOnlyState extends State<HeaderOnly> {
     });
   }
 }
+
+
+//
+// SingleChildScrollView(
+// scrollDirection: Axis.horizontal,
+// controller: scrollController,
+// child: Padding(
+// padding: const EdgeInsets.only(left: 10,right: 10,top: 20,bottom: 20),
+// child: Scrollbar(
+// controller: scrollController,
+// isAlwaysShown: true,
+// child: StreamBuilder<QuerySnapshot>(
+// stream:FirestoreService().getProduct(newCategory, searchName),
+// builder: (BuildContext context,
+//     AsyncSnapshot<QuerySnapshot> snapshot) {
+// if (snapshot.hasError) {
+// return Text('Something went wrong');
+// }
+// if (snapshot.connectionState == ConnectionState.waiting) {
+// return Center(child: CircularProgressIndicator());
+// }
+// if(snapshot.hasData){
+// return Container(
+// child:DataTable(
+// showBottomBorder: true,
+// horizontalMargin: 3,
+// columnSpacing: 10,
+// dataRowHeight: 60,
+// onSelectAll:(value) {
+// print('all');
+// },
+// columns: [
+// DataColumn(label: SizedBox(width:180, child: Center(child: TextData('ဆေးပစ္စည်း')))),
+// DataColumn(label: SizedBox(width:100,child: Center(child: TextData('လက်လီ')))),
+// DataColumn(label: SizedBox(width:100, child: Center(child: TextData('လက်ကား')))),
+// DataColumn(label: SizedBox(width:100, child: Center(child: TextData('အထူးစျေး')))),
+// ],
+// rows: snapshot.data.docs.map((data) {
+// return DataRow(
+// selected: false,
+// onSelectChanged: (v){
+// Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductDetail(data.data()['product_name'],data.data()['product_image'],  data.data()['product_id'], data.data()['description'])));
+// },
+// cells: [
+// DataCell(Container(width:180,
+// padding: EdgeInsets.only(left: 10.0),
+// child: Text(data.data()['product_name'],style: TextStyle(color: Constants.thirdColor,fontFamily: Constants.PrimaryFont,),textAlign: TextAlign.left,))),
+// DataCell(Center(
+// child: Container(
+// width:80,
+// height:150,
+// child:Text(''))
+// // child: ProductInPriceList(data.data()['product_id'],'လက်လီစျေး')),
+// )),
+// DataCell(Center(
+// child: Container(
+// width:80,
+// height:150,
+// child:Text(''))
+// // child: ProductInPriceList(data.data()['product_id'],'လက်ကားစျေး')),
+// )),
+// DataCell(Center(
+// child: Container(
+// width:80,
+// height:150,
+// child:Text(''))
+// // child: ProductInPriceList(data.data()['product_id'],'အထူးစျေး')),
+// )),
+// ]
+// );
+// },
+// ).toList(),
+// ),
+// );
+// }else{
+// return TitleTextColor("No data", Constants.thirdColor);
+// }
+// }),
+// ),
+// ),
+// ),

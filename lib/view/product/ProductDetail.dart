@@ -94,7 +94,7 @@ class _ProductDetailState extends State<ProductDetail> {
                 loading==true?Center(
                   child: Container(width: 120.0,
                       height: 120.0,
-                      child: CircularProgressIndicator(backgroundColor: Constants.primaryColor,)),
+                      child: CircularProgressIndicator  (backgroundColor: Constants.primaryColor,)),
                 ) :InkWell(
                   onTap: (){
                     Navigator.push(
@@ -124,7 +124,17 @@ class _ProductDetailState extends State<ProductDetail> {
                           ),
                         ),
                         placeholder: (context, url) => CircularProgressIndicator(),
-                        errorWidget: (context, url, error) => Icon(Icons.error),
+                        errorWidget: (context, url, error) => Container(
+                          width: 120.0,
+                          height: 120.0,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                                image: AssetImage(
+                                    'assets/image/logo.png'), fit: BoxFit.fitWidth),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -301,7 +311,13 @@ class LargeImage extends StatelessWidget {
               ),
             ),
             placeholder: (context, url) => CircularProgressIndicator(),
-            errorWidget: (context, url, error) => Icon(Icons.error),
+            errorWidget: (context, url, error) =>Container(
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('assets/image/logo.png'), fit: BoxFit.fitWidth),
+              ),
+            ),
           ),
         ),
       ),),

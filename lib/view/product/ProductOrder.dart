@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_pharmacy_order/model/OrderModel.dart';
 import 'package:uni_pharmacy_order/service/firestore_service.dart';
 import 'package:uni_pharmacy_order/util/constants.dart';
+import 'package:uni_pharmacy_order/view/PriceList/PricePage.dart';
 import 'package:uni_pharmacy_order/view/order/OrderPage.dart';
 import 'package:uni_pharmacy_order/view/product/ProductPage.dart';
 import 'package:uni_pharmacy_order/view/voucher/VoucherOrder.dart';
@@ -142,7 +143,17 @@ class _ProductOrderState extends State<ProductOrder> {
                         ),
                       ),
                       placeholder: (context, url) => CircularProgressIndicator(),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
+                      errorWidget: (context, url, error) => Container(
+                        width: 120.0,
+                        height: 120.0,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                              image: AssetImage(
+                                  'assets/image/logo.png'), fit: BoxFit.fitWidth),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -361,6 +372,7 @@ class _ProductOrderState extends State<ProductOrder> {
                         print("cost is "+cost.toString());
                         String newOrderId=uuid.v4();
                         if(orderId=="" || orderId==null) {
+
                           OrderModel orderModel = OrderModel(
                               productId: productId,
                               productName: productName,
@@ -375,86 +387,103 @@ class _ProductOrderState extends State<ProductOrder> {
                           _scaffoldKey.currentState
                               .showSnackBar(SnackBar(
                             content: Text('အဝယ်စာရင်း သွင်းပြီးပါပြီ'),
-                            duration: Duration(seconds: 2),
+                            duration: Duration(seconds: 1),
                             backgroundColor:Colors.greenAccent,
                           ));
-
-                          ///To ask user to order///
-                          ///
-                          ///
-                          ///
-                          ///
-                          ///
                           showDialog(
-                            context: context,
-                            builder:(BuildContext context){
-                              return AlertDialog(
-                                title: Text( 'ဝယ်ထားသော စာရင်းများ',
-                                    style: new TextStyle(
-                                        fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
-                                content: Container(
-                                  height: 200.0,
-                                  width: 300.0,
-                                  child: StreamBuilder<QuerySnapshot>(
-                                    stream: FirebaseFirestore.instance.collection('user').doc(userId).collection('order').snapshots(),
-                                    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                                      if (snapshot.hasError) {
-                                        return Text('Something went wrong');
-                                      }
-                                      if (snapshot.connectionState == ConnectionState.waiting) {
-                                        return Text("Loading");
-                                      }
-                                      return new ListView(
-                                        shrinkWrap: true,
-                                        children: snapshot.data.documents.map((DocumentSnapshot document) {
-                                          return new ListTile(
-                                            title: Text(document.data()['product_name'],style: TextStyle(color: Colors.black,fontFamily: Constants.PrimaryFont,fontSize: 15),),
-                                            subtitle: new Text(document.data()['quantity'] +"  "+document.data()['unit']),
-                                            trailing: Text( Constants().oCcy.format(double.parse(document.data()['cost'])).toString() + ".00 ကျပ်", style: TextStyle(color: Constants.thirdColor, fontFamily: Constants.PrimaryFont, fontSize: 14)),
-                                          );
-                                        }).toList(),
-                                      );
-                                    },
+                              context: context,
+                              builder:(BuildContext context){
+                                return AlertDialog(
+                                  title: Text( 'ဝယ်ထားသော စာရင်းများ',
+                                      style: new TextStyle(
+                                          fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
+                                  content: Container(
+                                    height: 200.0,
+                                    width: 300.0,
+                                    child: StreamBuilder<QuerySnapshot>(
+                                      stream: FirebaseFirestore.instance.collection('user').doc(userId).collection('order').snapshots(),
+                                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                        if (snapshot.hasError) {
+                                          return Text('Something went wrong');
+                                        }
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return Text("Loading");
+                                        }
+                                        return new ListView(
+                                          shrinkWrap: true,
+                                          children: snapshot.data.documents.map((DocumentSnapshot document) {
+                                            return new ListTile(
+                                              title: Text(document.data()['product_name'],style: TextStyle(color: Colors.black,fontFamily: Constants.PrimaryFont,fontSize: 15),),
+                                              subtitle: new Text(document.data()['quantity'] +"  "+document.data()['unit']),
+                                              trailing: Text( Constants().oCcy.format(double.parse(document.data()['cost'])).toString() + ".00 ကျပ်", style: TextStyle(color: Constants.thirdColor, fontFamily: Constants.PrimaryFont, fontSize: 14)),
+                                            );
+                                          }).toList(),
+                                        );
+                                      },
+                                    ),
                                   ),
-                                ),
-                                actions: <Widget>[
-                                  FlatButton(
-                                    child: Text('အဝယ်စာရင်းသို့သွားမည်',
-                                        style: new TextStyle(
-                                            fontSize: 16.0,
-                                            color: Constants.primaryColor,
-                                            fontFamily: Constants.PrimaryFont
-                                        ),
-                                        textAlign: TextAlign.right),
-                                    onPressed: () async {
-                                      Navigator.pushAndRemoveUntil(
+                                  actions: <Widget>[
+                                    FlatButton(
+                                      child: Text('အဝယ်စာရင်းသို့သွားမည်',
+                                          style: new TextStyle(
+                                              fontSize: 16.0,
+                                              color: Constants.primaryColor,
+                                              fontFamily: Constants.PrimaryFont
+                                          ),
+                                          textAlign: TextAlign.right),
+                                      onPressed: () async {
+                                        Navigator.pushAndRemoveUntil(
                                           context, MaterialPageRoute(builder: (context) => OrderPage()),
-                                            (route) => false,);
-                                    },
-                                  ),
-                                  FlatButton(
-                                    child: Text('ဆေးပစ္စည်းများ ဆက်မှာမည်',
-                                        style: new TextStyle(
-                                            fontSize: 16.0,
-                                            color: Constants.primaryColor,
-                                            fontFamily: Constants.PrimaryFont
-                                        ),
-                                        textAlign: TextAlign.right),
-                                    onPressed: () {
-                                      Navigator.pushAndRemoveUntil(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (BuildContext context) => ProductPage(),
-                                        ),
-                                            (route) => false,
-                                      );
-                                      // Navigator.pop(context);
-                                    },
-                                  )
-                                ],
-                              );
-                            }
+                                              (route) => false,);
+                                      },
+                                    ),
+                                    FlatButton(
+                                      child: Text('ဆေးပစ္စည်းများ ဆက်ကြည့်မည်',
+                                          style: new TextStyle(
+                                              fontSize: 16.0,
+                                              color: Constants.primaryColor,
+                                              fontFamily: Constants.PrimaryFont
+                                          ),
+                                          textAlign: TextAlign.right),
+                                      onPressed: () {
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (BuildContext context) => ProductPage(),
+                                          ),
+                                              (route) => false,
+                                        );
+                                        // Navigator.pop(context);
+                                      },
+                                    ),
+                                    FlatButton(
+                                      child: Text('စျေးနူန်းများ ကြည့်မည်',
+                                          style: new TextStyle(
+                                              fontSize: 16.0,
+                                              color: Constants.primaryColor,
+                                              fontFamily: Constants.PrimaryFont
+                                          ),
+                                          textAlign: TextAlign.right),
+                                      onPressed: () {
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (BuildContext context) =>PricePage(),
+                                          ),
+                                              (route) => false,
+                                        );
+                                        // Navigator.pop(context);
+                                      },
+                                    )
+                                  ],
+                                );
+                              }
                           );
+                          Future.delayed(const Duration(milliseconds: 1000), () {
+                            setState(() {
+                              Navigator.of(context).pop();
+                            });
+                          });
 
                         }
                         else{
@@ -564,8 +593,6 @@ class _ProductOrderState extends State<ProductOrder> {
       ),
     );
   }
-
-
 
   calculatorPrice(String quan,String unit,){
     List<int> priceList=new List();

@@ -33,7 +33,6 @@ Widget ProductCard(String id, String name, String description, String photo,
             ),
           ),
         ),
-
         SizedBox(height: 5.0,),
         Container(
           child: CachedNetworkImage(
@@ -49,7 +48,19 @@ Widget ProductCard(String id, String name, String description, String photo,
               ),
             ),
             placeholder: (context, url) => Container(height: 100, child: Center(child: CircularProgressIndicator())),
-            errorWidget: (context, url, error) => Icon(Icons.error),
+            errorWidget: (context, url, error) => Container(
+              height: 115.0,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(9),
+                border:Border.all(color: Colors.black,width: 1),
+                image: DecorationImage(
+                  image: AssetImage(
+                      'assets/image/logo.jpg'),
+                  fit: BoxFit.cover,
+                ),
+                shape: BoxShape.rectangle,
+              ),
+            ),
           ),
         ),
         SizedBox(height: 10.0,)
