@@ -56,14 +56,14 @@ class FirestoreService {
    collectionStream = products.snapshots();
     }else{
       if(category=="" || category =="All" ){
-        collectionStream = products.where('product_search',arrayContains: search).snapshots();
+        collectionStream = products.where('product_search',arrayContains: search).orderBy('product_name').snapshots();
       }
       else if(search==""){
-        collectionStream = products.where('category',isEqualTo: category).snapshots();
+        collectionStream = products.where('category',isEqualTo: category).orderBy('product_name').snapshots();
       }else {
         collectionStream =
             products.where('product_search', arrayContains: search).where(
-                'category', isEqualTo: category).snapshots();
+                'category', isEqualTo: category).orderBy('product_name').snapshots();
       }
       }
     Stream documentStream = products.doc().snapshots();

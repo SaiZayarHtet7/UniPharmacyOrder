@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/route_manager.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -137,7 +138,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin{
           backgroundColor: Colors.white,
           key: _scaffoldKey,
             body: SafeArea(
-
               child: Center(
                 child: Consumer<NetworkProvider>(
                   builder: (context,networkProvider,child){
@@ -301,10 +301,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin{
                                                         .then((value) {
                                                       print("User Updated");
 
-                                                      Navigator.pushReplacement(
-                                                        context,
-                                                        MaterialPageRoute(builder: (context) => HomePage()),
-                                                      );
+                                                      Get.to( HomePage());
+
                                                     }).catchError((error) {
                                                       setState(() {
                                                       showLoading=false;
@@ -406,7 +404,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin{
                                     height: 100.0,
                                   ),
                                   Text(
-                                    'Version 1.0.2+2',
+                                    'Version 1.1.0',
                                     style:
                                     TextStyle(color: Constants.primaryColor, fontSize: 20),
                                   ),

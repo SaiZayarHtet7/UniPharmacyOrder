@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:get/route_manager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_pharmacy_order/main.dart';
@@ -27,7 +28,6 @@ import 'package:uni_pharmacy_order/widget/ProductCard.dart';
 import 'package:uni_pharmacy_order/widget/TitleText.dart';
 
 
-final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class ProductPage extends StatefulWidget {
   @override
@@ -35,54 +35,15 @@ class ProductPage extends StatefulWidget {
 }
 
 class _ProductPageState extends State<ProductPage> {
+
+
+  final GlobalKey<ScaffoldState> _scaffoldKeyProduct = GlobalKey<ScaffoldState>();
   String userName,userId,searchName,messageNoti;
   bool initLoading,showSearchBar;
   ScrollController _controller = new ScrollController();
+  FocusNode searchFocus;
 
-  Future<bool> _onWillPop() async {
-    print('Product Page');
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (BuildContext context) => HomePage(),
-      ),
-          (route) => false,
-    );
-    // showDialog(
-    //   context: context,
-    //   builder: (context) => AlertDialog(
-    //     title: Text( 'Application မှထွက်ရန် သေချာပြီလား?',
-    //         style: new TextStyle(
-    //             fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
-    //     actions: <Widget>[
-    //       FlatButton(
-    //         child: Text('ထွက်မည်',
-    //             style: new TextStyle(
-    //                 fontSize: 16.0,
-    //                 color: Constants.primaryColor,
-    //                 fontFamily: Constants.PrimaryFont
-    //             ),
-    //             textAlign: TextAlign.right),
-    //         onPressed: () async {
-    //           SystemNavigator.pop();
-    //         },
-    //       ),
-    //       FlatButton(
-    //         child: Text('မထွက်ပါ',
-    //             style: new TextStyle(
-    //                 fontSize: 16.0,
-    //                 color: Constants.primaryColor,
-    //                 fontFamily: Constants.PrimaryFont
-    //             ),
-    //             textAlign: TextAlign.right),
-    //         onPressed: () {
-    //           Navigator.pop(context);
-    //         },
-    //       )
-    //     ],
-    //   ),
-    // );
-  }
+
 
   fetchData() async {
     SharedPreferences pref=await SharedPreferences.getInstance();
@@ -110,201 +71,205 @@ class _ProductPageState extends State<ProductPage> {
     });
     fetchData();
     super.initState();
+    searchFocus=FocusNode();
   }
   
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: WillPopScope(
-        onWillPop: _onWillPop,
-        child: Scaffold(
-          key: _scaffoldKey,
-            backgroundColor:Constants.thirdColor,
-          endDrawer: new Drawer(
-              child: HeaderOnly()),
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            actions: [
-              showSearchBar==true? IconButton(icon: Icon(Icons.close,color: Colors.black,), onPressed: (){
-                setState(() {
-                  showSearchBar=false;
-                  searchName="";
-                });
-              }) : InkWell(child:messageNoti=="0"||messageNoti==null ?
-              Image.asset('assets/image/menu.png',width: 30,):
-              Badge(position:BadgePosition(top: 4,end: -5) ,
-                badgeContent: Text(messageNoti.toString()),child:Image.asset('assets/image/menu.png',width: 30,) , ),onTap: (){
-                ///Logics for notification
-                _scaffoldKey.currentState.openEndDrawer();
-              },),
-              SizedBox(width: 10,),
+      home: Scaffold(
+        key: _scaffoldKeyProduct,
+          backgroundColor:Constants.thirdColor,
+        endDrawer: new Drawer(
+            child: HeaderOnly()),
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          actions: [
+            showSearchBar==true? IconButton(icon: Icon(Icons.close,color: Colors.black,), onPressed: (){
+              setState(() {
+                showSearchBar=false;
+                searchName="";
+              });
+            }) : InkWell(child:messageNoti=="0"||messageNoti==null ?
+            Image.asset('assets/image/menu.png',width: 30,):
+            Badge(position:BadgePosition(top: 4,end: -5) ,
+              badgeContent: Text(messageNoti.toString()),child:Image.asset('assets/image/menu.png',width: 30,) , ),onTap: (){
+              ///Logics for notification
+              _scaffoldKeyProduct.currentState.openEndDrawer();
+            },),
+            SizedBox(width: 10,),
+          ],
+          titleSpacing: 0,
+          iconTheme: new IconThemeData(color: Constants.primaryColor),
+          toolbarHeight: 70,
+          backgroundColor: Colors.white,
+          // Don't show the leading button
+          title:showSearchBar==true?
+          TextFormField(
+            focusNode: searchFocus,
+            keyboardType: TextInputType.name,
+            style: TextStyle(
+                fontSize: 17.0, fontFamily: Constants.PrimaryFont),
+            onChanged: (value) {
+              setState(() {
+                searchName = value.toString().toLowerCase();
+              });
+            },
+            decoration: InputDecoration(
+                contentPadding: EdgeInsets.all(2),
+                hintText: 'အမည်ဖြင့်ရှာမည်',
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Constants.primaryColor,
+                ),
+                enabledBorder: new OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: new BorderSide(color: Colors.white),
+                ),
+                focusedBorder: new OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide:
+                    new BorderSide(color: Colors.white)),
+                border: new OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: new BorderSide(color: Colors.white),
+                )),
+          ):
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              InkWell(
+                onTap: (){
+                  Get.offAll(HomePage());
+                },
+                  child: Image.asset('assets/image/logo.png',width: 95,)),
+              Container(width: 130.0,
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text('ကုန်ပစ္စည်းများ',style: TextStyle(color: Constants.primaryColor,fontSize: 18,),)),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                IconButton(icon: Icon(Icons.search,color: Colors.black,),onPressed: (){
+                  ///Logics for notification
+                  setState(() {
+                    showSearchBar=true;
+                    searchFocus.requestFocus();
+                  });
+                },),
+                  SizedBox(width: 10,),
+              ],),
             ],
-            titleSpacing: 0,
-            iconTheme: new IconThemeData(color: Constants.primaryColor),
-            toolbarHeight: 70,
-            backgroundColor: Colors.white,
-            // Don't show the leading button
-            title:showSearchBar==true?
-            TextFormField(
-              keyboardType: TextInputType.name,
-              style: TextStyle(
-                  fontSize: 17.0, fontFamily: Constants.PrimaryFont),
-              onChanged: (value) {
-                setState(() {
-                  searchName = value.toString().toLowerCase();
-                });
-              },
-              decoration: InputDecoration(
-                  contentPadding: EdgeInsets.all(2),
-                  hintText: 'အမည်ဖြင့်ရှာမည်',
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Constants.primaryColor,
-                  ),
-                  enabledBorder: new OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: new BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: new OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide:
-                      new BorderSide(color: Colors.white)),
-                  border: new OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: new BorderSide(color: Colors.white),
-                  )),
-            ):
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Image.asset('assets/image/logo.png',width: 95,),
-                Container(width: 130.0,
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text('ကုန်ပစ္စည်းများ',style: TextStyle(color: Constants.primaryColor,fontSize: 18,),)),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                  IconButton(icon: Icon(Icons.search,color: Colors.black,),onPressed: (){
-                    ///Logics for notification
-                    setState(() {
-                      showSearchBar=true;
-                    });
-                  },),
-                    SizedBox(width: 10,),
-                ],),
-              ],
-            ),
           ),
-          body:SingleChildScrollView(
-            child: Container(
-              padding: EdgeInsets.all(10),
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height/1.12,
-              color:Constants.thirdColor,
-              child: searchName==null || searchName==""?
-              StreamBuilder<QuerySnapshot>(
-                  stream:FirestoreService().get('category'),
-                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if(snapshot.hasError){
-                      return Text('Something went wrong');
-                    }if(!snapshot.hasData){
-                      return Center(child: TitleText("No Data"));
-                    }
-                    if(snapshot.connectionState== ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    return new ListView(
-                      controller: _controller,
-                      children: snapshot.data.docs.map((DocumentSnapshot document) {
-                        return InkWell(
-                          onTap: (){
-                            FocusScope.of(context).requestFocus(FocusNode());
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> ShowProduct(document.data()['category_name'])));
-                          },
-                          child: new  Container(
-                            padding: EdgeInsets.all(0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  height: 33.0,
-                                  padding: EdgeInsets.symmetric(horizontal: 3),
-                                  child: Text(
-                                    document.data()['category_name'],
-                                    textAlign: TextAlign.start,
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontFamily: Constants.PrimaryFont,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 5.0,),
-                                Container(
-                                  child: CachedNetworkImage(
-                                    imageUrl: document.data()['category_image'],
-                                    fit: BoxFit.cover,
-                                    imageBuilder: (context, imageProvider) => Container(
-                                      height: 120.0,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(9),
-                                        border:Border.all(color: Colors.black,width: 1),
-                                        image: DecorationImage(
-                                            image: imageProvider, fit: BoxFit.cover),
-                                      ),
-                                    ),
-                                    placeholder: (context, url) => Container(height: 100, child: Center(child: CircularProgressIndicator())),
-                                    errorWidget: (context, url, error) => Icon(Icons.error),
-                                  ),
-                                ),
-                                SizedBox(height: 10.0,)
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  }):
-              StreamBuilder<QuerySnapshot>(
-                      stream: (searchName=="" || searchName==null) ? FirestoreService().get('product'):FirebaseFirestore.instance
-                          .collection('product').where("product_search", arrayContains : searchName).snapshots(),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (snapshot.hasError) {
-                          return Text('Something went wrong');
-                        }
-                        if(snapshot.data.toString()==""){
-                          return Center(child: Text("No data",style: TextStyle(color: Colors.white),),);
-                        }
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        }
-                        return new GridView(
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 5,
-                              crossAxisSpacing: 5),
-                          children: snapshot.data.docs
-                              .map(
-                                (DocumentSnapshot document) => InkWell(
-                                 onTap: (){
-                                   FocusScope.of(context).requestFocus(FocusNode());
-                                   Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductDetail(document.data()['product_name'],document.data()['product_image'],  document.data()['product_id'], document.data()['description'])));
-                                 },
-
-                                  child: ProductCard(
-                                  document.data()['product_id'],
-                                  document.data()['product_name'],
-                                  document.data()['description'],
-                                  document.data()['product_image'],
-                                  document.data()['category']),
-                                ),
-                          ).toList(),
-                        );
-                      }),
-            ),
-          )
         ),
+        body:SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.all(10),
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height/1.12,
+            color:Constants.thirdColor,
+            child: searchName==null || searchName==""?
+            StreamBuilder<QuerySnapshot>(
+                stream:FirestoreService().get('category'),
+                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if(snapshot.hasError){
+                    return Text('Something went wrong');
+                  }if(!snapshot.hasData){
+                    return Center(child: TitleText("No Data"));
+                  }
+                  if(snapshot.connectionState== ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  return new ListView(
+                    controller: _controller,
+                    children: snapshot.data.docs.map((DocumentSnapshot document) {
+                      return InkWell(
+                        onTap: (){
+                          FocusScope.of(context).requestFocus(FocusNode());
+                          Get.to(ShowProduct(document.data()['category_name']));
+                        },
+                        child: new  Container(
+                          padding: EdgeInsets.all(0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: 33.0,
+                                padding: EdgeInsets.symmetric(horizontal: 3),
+                                child: Text(
+                                  document.data()['category_name'],
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontFamily: Constants.PrimaryFont,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 5.0,),
+                              Container(
+                                child: CachedNetworkImage(
+                                  imageUrl: document.data()['category_image'],
+                                  fit: BoxFit.cover,
+                                  imageBuilder: (context, imageProvider) => Container(
+                                    height: 120.0,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(9),
+                                      border:Border.all(color: Colors.black,width: 1),
+                                      image: DecorationImage(
+                                          image: imageProvider, fit: BoxFit.cover),
+                                    ),
+                                  ),
+                                  placeholder: (context, url) => Container(height: 100, child: Center(child: CircularProgressIndicator())),
+                                  errorWidget: (context, url, error) => Icon(Icons.error),
+                                ),
+                              ),
+                              SizedBox(height: 10.0,)
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                }):
+            StreamBuilder<QuerySnapshot>(
+                    stream: (searchName=="" || searchName==null) ? FirestoreService().get('product'):FirebaseFirestore.instance
+                        .collection('product').where("product_search", arrayContains : searchName).orderBy('product_name').snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        return Text('Something went wrong');
+                      }
+                      if(snapshot.data.toString()==""){
+                        return Center(child: Text("No data",style: TextStyle(color: Colors.white),),);
+                      }
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      return new GridView(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 5,
+                            crossAxisSpacing: 5),
+                        children: snapshot.data.docs
+                            .map(
+                              (DocumentSnapshot document) => InkWell(
+                               onTap: (){
+                                 FocusScope.of(context).requestFocus(FocusNode());
+                                 Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductDetail(document.data()['product_name'],document.data()['product_image'],  document.data()['product_id'], document.data()['description'])));
+                               },
+
+                                child: ProductCard(
+                                document.data()['product_id'],
+                                document.data()['product_name'],
+                                document.data()['description'],
+                                document.data()['product_image'],
+                                document.data()['category']),
+                              ),
+                        ).toList(),
+                      );
+                    }),
+          ),
+        )
       ),
     );
   }
@@ -415,10 +380,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => HomePage()));
+            Navigator.of(context).pop();
+            Get.offAll(HomePage());
           },
         ),
         Padding(
@@ -443,7 +406,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
               style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
             ),
             onTap: () {
-             Navigator.of(context).pop();
+              Navigator.of(context).pop();
             },
           ),
         ),
@@ -465,10 +428,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PricePage()));
+            Navigator.of(context).pop();
+            Get.to(PricePage());
           },
         ),
         Padding(
@@ -489,10 +450,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => OrderPage()));
+            Navigator.of(context).pop();
+            Get.to(OrderPage());
           },
         ),
         Padding(
@@ -513,10 +472,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => VoucherPage()));
+            Navigator.of(context).pop();
+            Get.to(VoucherPage());
           },
         ),
         Padding(
@@ -537,10 +494,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ChatBox()));
+            Navigator.of(context).pop();
+           Get.to(ChatBox());
           },
         ) :Badge(
           position: BadgePosition(top: -5,end: 30),
@@ -554,10 +509,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
               style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
             ),
             onTap: () {
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ChatBox()));
+              Navigator.of(context).pop();
+              Get.to(ChatBox());
               //TODO
               FirebaseFirestore.instance.collection('user').doc(userId)
                   .update({'message_noti':0})
@@ -589,10 +542,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ContactPage()));
+            Navigator.of(context).pop();
+            Get.to(ContactPage());
           },
         ),
         Padding(
@@ -636,10 +587,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
                         if (user == null) {
                           print('User is currently signed out!');
                           pref.clear();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => LoginPage()),
-                          );
+                          Navigator.of(context).pop();
+                          Get.offAll(LoginPage());
                         } else {
                           print('User is signed in!');
                         }
@@ -661,10 +610,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
                 ],
               ),
             );
-            // Navigator.pushReplacement(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (context) => HomePage()));
+
           },
         ),
         Padding(
@@ -719,7 +665,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
   Future _openGallary(BuildContext context) async {
 
     SharedPreferences pref=await SharedPreferences.getInstance();
-    var picture = await picker.getImage(source: ImageSource.gallery);
+    var picture = await picker.getImage(source: ImageSource.gallery,imageQuality: 50);
     File tmpFile = File(picture.path);
     userImage = tmpFile;
     Navigator.pop(context);
@@ -754,10 +700,9 @@ class _HeaderOnlyState extends State<HeaderOnly> {
     });
   }
 
-
   Future _openCamera(BuildContext context) async {
     SharedPreferences pref=await SharedPreferences.getInstance();
-    final picture = await picker.getImage(source: ImageSource.camera);
+    final picture = await picker.getImage(source: ImageSource.camera,imageQuality: 50);
     File tmpFile = File(picture.path);
     userImage = tmpFile;
     Navigator.pop(context);

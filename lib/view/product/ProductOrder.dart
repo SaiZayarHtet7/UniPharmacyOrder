@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_pharmacy_order/model/OrderModel.dart';
@@ -65,12 +66,11 @@ class _ProductOrderState extends State<ProductOrder> {
       Navigator.of(context).pop();
     }else{
       if(kind=="order"){
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => OrderPage()));
+        print("order Back");
+        Get.off(OrderPage());
       }
       else{
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => VoucherOrder(voucherId, voucherNumber)));
+        Get.off(VoucherOrder(voucherId, voucherNumber));
       }
     }
   }
@@ -383,13 +383,9 @@ class _ProductOrderState extends State<ProductOrder> {
                               orderId: newOrderId
                           );
                           FirestoreService().addOrder("order", userId, orderModel);
+                          Get.back();
+                          Get.snackbar("အဝယ်စာရင်း သွင်းပြီးပါပြီ","",backgroundColor:Colors.greenAccent,duration: Duration(seconds:3),snackPosition: SnackPosition.BOTTOM,colorText: Colors.white,snackStyle: SnackStyle.FLOATING  );
 
-                          _scaffoldKey.currentState
-                              .showSnackBar(SnackBar(
-                            content: Text('အဝယ်စာရင်း သွင်းပြီးပါပြီ'),
-                            duration: Duration(seconds: 1),
-                            backgroundColor:Colors.greenAccent,
-                          ));
                           showDialog(
                               context: context,
                               builder:(BuildContext context){
@@ -424,7 +420,7 @@ class _ProductOrderState extends State<ProductOrder> {
                                   ),
                                   actions: <Widget>[
                                     FlatButton(
-                                      child: Text('အဝယ်စာရင်းသို့သွားမည်',
+                                      child: Text('OK',
                                           style: new TextStyle(
                                               fontSize: 16.0,
                                               color: Constants.primaryColor,
@@ -432,58 +428,13 @@ class _ProductOrderState extends State<ProductOrder> {
                                           ),
                                           textAlign: TextAlign.right),
                                       onPressed: () async {
-                                        Navigator.pushAndRemoveUntil(
-                                          context, MaterialPageRoute(builder: (context) => OrderPage()),
-                                              (route) => false,);
+                                        Navigator.of(context).pop();
                                       },
                                     ),
-                                    FlatButton(
-                                      child: Text('ဆေးပစ္စည်းများ ဆက်ကြည့်မည်',
-                                          style: new TextStyle(
-                                              fontSize: 16.0,
-                                              color: Constants.primaryColor,
-                                              fontFamily: Constants.PrimaryFont
-                                          ),
-                                          textAlign: TextAlign.right),
-                                      onPressed: () {
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (BuildContext context) => ProductPage(),
-                                          ),
-                                              (route) => false,
-                                        );
-                                        // Navigator.pop(context);
-                                      },
-                                    ),
-                                    FlatButton(
-                                      child: Text('စျေးနူန်းများ ကြည့်မည်',
-                                          style: new TextStyle(
-                                              fontSize: 16.0,
-                                              color: Constants.primaryColor,
-                                              fontFamily: Constants.PrimaryFont
-                                          ),
-                                          textAlign: TextAlign.right),
-                                      onPressed: () {
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (BuildContext context) =>PricePage(),
-                                          ),
-                                              (route) => false,
-                                        );
-                                        // Navigator.pop(context);
-                                      },
-                                    )
                                   ],
                                 );
                               }
                           );
-                          Future.delayed(const Duration(milliseconds: 1000), () {
-                            setState(() {
-                              Navigator.of(context).pop();
-                            });
-                          });
 
                         }
                         else{

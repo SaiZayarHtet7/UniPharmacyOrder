@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/route_manager.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
@@ -38,8 +39,6 @@ import 'package:intl/intl.dart';
 import 'package:uni_pharmacy_order/model/VoucherModel.dart';
 import 'package:uuid/uuid.dart';
 
-final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
 
 class OrderPage extends StatefulWidget {
   @override
@@ -66,52 +65,7 @@ class _OrderPageState extends State<OrderPage> with SingleTickerProviderStateMix
     }while(vNo.length<5);
     return  vNo;
   }
-  Future<bool> _onWillPop() async {
-    print('OrderPage BackButton');
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (BuildContext context) => HomePage(),
-      ),
-          (route) => false,
-    );
-
-    // showDialog(
-    //   context: context,
-    //   builder: (context) => AlertDialog(
-    //     title: Text( 'Application မှထွက်ရန် သေချာပြီလား?',
-    //         style: new TextStyle(
-    //             fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
-    //     actions: <Widget>[
-    //       FlatButton(
-    //         child: Text('ထွက်မည်',
-    //             style: new TextStyle(
-    //                 fontSize: 16.0,
-    //                 color: Constants.primaryColor,
-    //                 fontFamily: Constants.PrimaryFont
-    //             ),
-    //             textAlign: TextAlign.right),
-    //         onPressed: () async {
-    //           SystemNavigator.pop();
-    //         },
-    //       ),
-    //       FlatButton(
-    //         child: Text('မထွက်ပါ',
-    //             style: new TextStyle(
-    //                 fontSize: 16.0,
-    //                 color: Constants.primaryColor,
-    //                 fontFamily: Constants.PrimaryFont
-    //             ),
-    //             textAlign: TextAlign.right),
-    //         onPressed: () {
-    //           Navigator.pop(context);
-    //         },
-    //       )
-    //     ],
-    //   ),
-    // );
-  }
 
   fetchData() async {
     SharedPreferences pref=await SharedPreferences.getInstance();
@@ -182,409 +136,445 @@ class _OrderPageState extends State<OrderPage> with SingleTickerProviderStateMix
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
-    return MaterialApp(
-      home: WillPopScope(
-        onWillPop: _onWillPop,
-        child: Scaffold(
-          key: _scaffoldKey,
-          backgroundColor: Colors.white,
-          endDrawer:new Drawer(
-              child: HeaderOnly()),
-          appBar:  AppBar(
-            automaticallyImplyLeading: false,
-            titleSpacing: 0,
-            actions: [
-              InkWell(child:messageNoti=="0"||messageNoti==null ?
-              Image.asset('assets/image/menu.png',width: 30,):
-              Badge(position:BadgePosition(top: 4,end: -5) ,
-                badgeContent: Text(messageNoti.toString()),child:Image.asset('assets/image/menu.png',width: 30,) , ),onTap: (){
-                ///Logics for notification
-                _scaffoldKey.currentState.openEndDrawer();
-              },),
-              SizedBox(width: 10.0,)
-            ],
-            iconTheme: new IconThemeData(color: Constants.primaryColor),
-            toolbarHeight: 70,
-            backgroundColor: Colors.white,
-            // Don't show the leading button
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Image.asset('assets/image/logo.png',width: 95,),
-                Container(width: 130.0,
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text('အဝယ်စာရင်း',style: TextStyle(color: Constants.primaryColor,fontSize: 18,),)),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    InkWell(
-                        onTap: (){
-                          ///Logics for notification
-                          FirebaseFirestore.instance.collection('user').doc(userId)
-                              .update({'noti_count': 0})
-                              .then((value) => print("User Updated"))
-                              .catchError((error) => print("Failed to update user: $error"));
-                          notiCountStr="0";
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => NotificationPage()));
-                        },
-                        child: NotiIcon(context,userId,notiCountStr)),
-                    SizedBox(width: 10,),
-                  ],),
-              ],
-            ),
-          ),
-          body: SingleChildScrollView (
-            child: Container(
-            color: Colors.white,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                 Column(
-                   crossAxisAlignment: CrossAxisAlignment.center,
-                   children: [
-                     SingleChildScrollView(
-                       scrollDirection: Axis.horizontal,
-                       controller: scrollController,
-                       child: Padding(
-                         padding: const EdgeInsets.only(left: 10,right: 10,top: 20,bottom: 20),
-                         child: Scrollbar(
-                           controller: scrollController,
-                           isAlwaysShown: true,
 
-                           child: StreamBuilder<QuerySnapshot>(
-                               stream: FirebaseFirestore.instance.collection('user').doc(userId).collection("order").snapshots(),
-                               builder: (BuildContext context,
-                                   AsyncSnapshot<QuerySnapshot> snapshot) {
-                                 if (snapshot.hasError) {
-                                   return Text('Something went wrong');
-                                 }
-                                 if (snapshot.connectionState == ConnectionState.waiting) {
-                                   return CircularProgressIndicator();
-                                 }
-                                 if(snapshot.hasData){
-                                   return Container(
-                                     child:DataTable(
-                                       horizontalMargin: 3,
-                                       columnSpacing: 10,
-                                       columns: [
-                                         DataColumn(label: TextDataColor('အမျိုးအမည်')),
-                                         DataColumn(label: TextDataColor('အရေအတွက်')),
-                                         DataColumn(label: TextDataColor('ယူနစ်')),
-                                         DataColumn(label: Expanded(child: Align(alignment:Alignment.centerRight, child: Text("သင့်ငွေ",textAlign: TextAlign.center,style: TextStyle(color: Constants.thirdColor,fontSize: 13,fontFamily: Constants.PrimaryFont))))),
-                                         DataColumn(label: Text('')),
-                                         DataColumn(label: Text('')),
-                                       ],
-                                        rows: snapshot.data.documents.map((data) {
-                                            return DataRow(
-                                                cells: [
-                                                  DataCell(TextData(data.data()['product_name'])),
-                                                  DataCell(Align(alignment: Alignment.centerRight,child: TextData(data.data()['quantity']))),
-                                                  DataCell(Align(alignment: Alignment.centerLeft,child: TextData(data.data()['unit']))),
-                                                  DataCell(Align(
-                                                      alignment: Alignment.centerRight,
-                                                      child: Container(padding:EdgeInsets.only(left: 10),child: Text(Constants().oCcy.format(double.parse(data.data()['cost'])).toString() + ".00", style: TextStyle(color: Constants.primaryColor, fontFamily: Constants.PrimaryFont, fontSize: 14),)))),
-                                                  DataCell(ClipOval(
-                                                    child: Material(
-                                                      color: Colors.blue,
-                                                      // button color
-                                                      child: InkWell(
-                                                        splashColor: Colors.red,
-                                                        // inkwell color
-                                                        child: Padding(
-                                                          padding: const EdgeInsets
-                                                              .all(8.0),
-                                                          child: SizedBox(
-                                                              child: Icon(
-                                                                Icons.edit,
-                                                                size: 25,
-                                                                color: Colors
-                                                                    .white,)),
-                                                        ),
-                                                        onTap: () {
-                                                          Navigator.pushReplacement(
-                                                            context,
-                                                            MaterialPageRoute(builder: (context) => ProductOrder("order","","",data.data()['product_id'],data.data()['product_name'],data.data()['product_image'],data.data()['order_id'],data.data()['quantity'],data.data()['unit'],data.data()['cost'])),
-                                                          );
-                                                        },
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+    return MaterialApp(
+      home: Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: Colors.white,
+        endDrawer:new Drawer(
+            child: HeaderOnly()),
+        appBar:  AppBar(
+          automaticallyImplyLeading: false,
+          titleSpacing: 0,
+          actions: [
+            InkWell(child:messageNoti=="0"||messageNoti==null ?
+            Image.asset('assets/image/menu.png',width: 30,):
+            Badge(position:BadgePosition(top: 4,end: -5) ,
+              badgeContent: Text(messageNoti.toString()),child:Image.asset('assets/image/menu.png',width: 30,) , ),onTap: (){
+              ///Logics for notification
+              _scaffoldKey.currentState.openEndDrawer();
+            },),
+            SizedBox(width: 10.0,)
+          ],
+          iconTheme: new IconThemeData(color: Constants.primaryColor),
+          toolbarHeight: 70,
+          backgroundColor: Colors.white,
+          // Don't show the leading button
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              InkWell(
+                  onTap: (){
+                    Get.offAll(HomePage());
+                  },
+                  child: Image.asset('assets/image/logo.png',width: 95,)),
+              Container(width: 130.0,
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text('အဝယ်စာရင်း',style: TextStyle(color: Constants.primaryColor,fontSize: 18,),)),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  InkWell(
+                      onTap: (){
+                        ///Logics for notification
+                        FirebaseFirestore.instance.collection('user').doc(userId)
+                            .update({'noti_count': 0})
+                            .then((value) => print("User Updated"))
+                            .catchError((error) => print("Failed to update user: $error"));
+                        notiCountStr="0";
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => NotificationPage()));
+                      },
+                      child: NotiIcon(context,userId,notiCountStr)),
+                  SizedBox(width: 10,),
+                ],),
+            ],
+          ),
+        ),
+        body: SingleChildScrollView (
+          child: Container(
+          color: Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+               Column(
+                 crossAxisAlignment: CrossAxisAlignment.center,
+                 children: [
+                   SingleChildScrollView(
+                     scrollDirection: Axis.horizontal,
+                     controller: scrollController,
+                     child: Padding(
+                       padding: const EdgeInsets.only(left: 10,right: 10,top: 20,bottom: 20),
+                       child: Scrollbar(
+                         controller: scrollController,
+                         isAlwaysShown: true,
+
+                         child: StreamBuilder<QuerySnapshot>(
+                             stream: FirebaseFirestore.instance.collection('user').doc(userId).collection("order").snapshots(),
+                             builder: (BuildContext context,
+                                 AsyncSnapshot<QuerySnapshot> snapshot) {
+                               if (snapshot.hasError) {
+                                 return Text('Something went wrong');
+                               }
+                               if (snapshot.connectionState == ConnectionState.waiting) {
+                                 return CircularProgressIndicator();
+                               }
+                               if(snapshot.hasData){
+                                 return Container(
+                                   child:DataTable(
+                                     horizontalMargin: 3,
+                                     columnSpacing: 10,
+                                     columns: [
+                                       DataColumn(label: TextDataColor('အမျိုးအမည်')),
+                                       DataColumn(label: TextDataColor('အရေအတွက်')),
+                                       DataColumn(label: TextDataColor('ယူနစ်')),
+                                       DataColumn(label: Expanded(child: Align(alignment:Alignment.centerRight, child: Text("သင့်ငွေ",textAlign: TextAlign.center,style: TextStyle(color: Constants.thirdColor,fontSize: 13,fontFamily: Constants.PrimaryFont))))),
+                                       DataColumn(label: Text('')),
+                                       DataColumn(label: Text('')),
+                                     ],
+                                      rows: snapshot.data.documents.map((data) {
+                                          return DataRow(
+                                              cells: [
+                                                DataCell(TextData(data.data()['product_name'])),
+                                                DataCell(Align(alignment: Alignment.centerRight,child: TextData(data.data()['quantity']))),
+                                                DataCell(Align(alignment: Alignment.centerLeft,child: TextData(data.data()['unit']))),
+                                                DataCell(Align(
+                                                    alignment: Alignment.centerRight,
+                                                    child: Container(padding:EdgeInsets.only(left: 10),child: Text(Constants().oCcy.format(double.parse(data.data()['cost'])).toString() + ".00", style: TextStyle(color: Constants.primaryColor, fontFamily: Constants.PrimaryFont, fontSize: 14),)))),
+                                                DataCell(ClipOval(
+                                                  child: Material(
+                                                    color: Colors.blue,
+                                                    // button color
+                                                    child: InkWell(
+                                                      splashColor: Colors.red,
+                                                      // inkwell color
+                                                      child: Padding(
+                                                        padding: const EdgeInsets
+                                                            .all(8.0),
+                                                        child: SizedBox(
+                                                            child: Icon(
+                                                              Icons.edit,
+                                                              size: 25,
+                                                              color: Colors
+                                                                  .white,)),
                                                       ),
+                                                      onTap: () {
+                                                        Get.off( ProductOrder("order","","",data.data()['product_id'],data.data()['product_name'],data.data()['product_image'],data.data()['order_id'],data.data()['quantity'],data.data()['unit'],data.data()['cost']));
+                                                      },
                                                     ),
-                                                  )),
-                                                  DataCell(ClipOval(child: Material(
-                                                      color: Constants
-                                                          .emergencyColor,
-                                                      // button color
-                                                      child: InkWell(
-                                                        splashColor: Colors.red,
-                                                        // inkwell color
-                                                        child: Padding(
-                                                          padding: const EdgeInsets
-                                                              .all(8.0),
-                                                          child: SizedBox(
-                                                              child: Icon(Icons
-                                                                  .delete_forever,
-                                                                size: 25,
-                                                                color: Colors
-                                                                    .white,)),
-                                                        ),
-                                                        onTap: () {
-                                                          setState(() {
-                                                            totalCost=totalCost- double.parse (  data.data()['cost']);
-                                                            --orderCount;
-                                                          });
-                                                          FirestoreService().removeOrder("order", userId, data.data()['order_id']);
-                                                          Fluttertoast.showToast(msg: "ဖျက်ပြီးပါပြီ" ,toastLength: Toast.LENGTH_SHORT,backgroundColor: Constants.thirdColor);
-                                                        },
+                                                  ),
+                                                )),
+                                                DataCell(ClipOval(child: Material(
+                                                    color: Constants
+                                                        .emergencyColor,
+                                                    // button color
+                                                    child: InkWell(
+                                                      splashColor: Colors.red,
+                                                      // inkwell color
+                                                      child: Padding(
+                                                        padding: const EdgeInsets
+                                                            .all(8.0),
+                                                        child: SizedBox(
+                                                            child: Icon(Icons
+                                                                .delete_forever,
+                                                              size: 25,
+                                                              color: Colors
+                                                                  .white,)),
                                                       ),
+                                                      onTap: () {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (context) => AlertDialog(
+                                                            title: Text( 'ဖျက်ရန် သေချာပြီလား',
+                                                                style: new TextStyle(
+                                                                    fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
+                                                            actions: <Widget>[
+                                                              FlatButton(
+                                                                child: Text('ဖျက်မည်',
+                                                                    style: new TextStyle(
+                                                                        fontSize: 16.0,
+                                                                        color: Constants.primaryColor,
+                                                                        fontFamily: Constants.PrimaryFont
+                                                                    ),
+                                                                    textAlign: TextAlign.right),
+                                                                onPressed: () async {
+                                                                  setState(() {
+                                                                    totalCost=totalCost- double.parse (  data.data()['cost']);
+                                                                    --orderCount;
+                                                                  });
+                                                                  Navigator.of(context).pop();
+                                                                  FirestoreService().removeOrder("order", userId, data.data()['order_id']);
+                                                                  Fluttertoast.showToast(msg: "ဖျက်ပြီးပါပြီ" ,toastLength: Toast.LENGTH_SHORT,backgroundColor: Constants.thirdColor);},
+                                                              ),
+                                                              FlatButton(
+                                                                child: Text('မဖျက်ပါ',
+                                                                    style: new TextStyle(
+                                                                        fontSize: 16.0,
+                                                                        color: Constants.primaryColor,
+                                                                        fontFamily: Constants.PrimaryFont
+                                                                    ),
+                                                                    textAlign: TextAlign.right),
+                                                                onPressed: () {
+                                                                  Navigator.pop(context);
+                                                                },
+                                                              )
+                                                            ],
+                                                          ),
+                                                        );
+
+                                                      },
                                                     ),
-                                                  ))
-                                                ]
-                                            );
-                                        },
-                                        ).toList(),
+                                                  ),
+                                                ))
+                                              ]
+                                          );
+                                      },
+                                      ).toList(),
+                                   ),
+                                 );
+                               }else{
+                                 return TitleTextColor("No data", Constants.thirdColor);
+                               }
+                             }),
+                       ),
+                     ),
+                   ),
+
+                  orderCount==0 || orderCount==null ? Center(child: SizedBox(child: Text('အဝယ်စာရင်း မရှိသေးပါ',style: TextStyle(color: Constants.primaryColor,fontFamily: Constants.PrimaryFont,fontSize: 16),),)):
+                  Row(
+                     mainAxisSize: MainAxisSize.max,
+                     mainAxisAlignment: MainAxisAlignment.spaceAround ,
+                     crossAxisAlignment: CrossAxisAlignment.center,
+                     children: [
+                       Expanded(
+                         flex: 3,
+                         child: Container(height: 50.0,
+                             child: Text("စုစုပေါင်း  ",textAlign: TextAlign.right,style: TextStyle(fontSize: 18,fontFamily: Constants.PrimaryFont,color: Constants.thirdColor),)),
+                       ),
+                       SizedBox(width: 10.0,),
+                       Expanded(
+                         flex: 2,
+                         child: Container(height: 50,
+                             child: Text(Constants().oCcy.format(totalCost)+" ကျပ်",style: TextStyle(color: Constants.primaryColor,fontFamily: Constants.PrimaryFont,fontWeight: FontWeight.bold,fontSize: 18),)),
+                       ),
+                     ],
+                   ),
+
+                   orderCount==0 || orderCount==null ? SizedBox( ):  isLoading==true? Container(margin: EdgeInsets.all(10),
+                  width: 50.0,
+                  height: 50.0,child: CircularProgressIndicator(backgroundColor: Constants.thirdColor,),):
+                  Container(
+                     margin: EdgeInsets.all(10),
+                     height: 50.0,
+                     child: RaisedButton(
+                       onPressed: () async {
+
+                         showDialog(
+                           context: context,
+                           builder: (context) => AlertDialog(
+                             title: Text( 'မှာယူရန် သေချာပြီလား',
+                                 style: new TextStyle(
+                                     fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
+                             actions: <Widget>[
+                               FlatButton(
+                                 child: Text('မှာယူမည်',
+                                     style: new TextStyle(
+                                         fontSize: 16.0,
+                                         color: Constants.primaryColor,
+                                         fontFamily: Constants.PrimaryFont
                                      ),
-                                   );
-                                 }else{
-                                   return TitleTextColor("No data", Constants.thirdColor);
-                                 }
-                               }),
+                                     textAlign: TextAlign.right),
+                                 onPressed: () async {
+
+                                   setState(() {
+                                     isLoading=true;
+                                   });
+                                   final DateTime now = DateTime.now();
+
+                                   DateFormat dateFormat = new DateFormat('dd-MM-yyyy hh:mm a');
+                                   print(dateFormat.format(now));
+                                   String voucherId=uuid.v4();
+
+                                   FirebaseFirestore.instance.collection("voucher").get().then((value){
+                                     value.docs.forEach((element) {
+                                       voucherArr.add(element.data()['voucher_number']);
+                                     });
+                                     voucherArr.sort();
+                                     print(voucherArr.last);
+                                     int voucherNumber=voucherArr.last;
+                                     VoucherModel voucherModel =VoucherModel(
+                                       searchName: Constants().setSearchParam(userName.toLowerCase()),
+                                       voucherId:voucherId,
+                                       userName: userName,
+                                       token:userToken,
+                                       dateTime: dateFormat.format(now).toString(),
+                                       status:Constants.orderPrepare,
+                                       userId: userId,
+                                       voucherNumber:(voucherNumber == null || voucherNumber == 0) ? 1: (voucherNumber+1),
+                                     );
+                                     FirestoreService().addVoucher("voucher",voucherModel );
+
+                                     NotiModel notiModel= NotiModel(
+                                       notiId: uuid.v4(),
+                                       notiTitle: "အမှာစာအသစ်",
+                                       notiText: "$userName ထံမှ အော်ဒါလက်ခံရရှိပါသည် (Voucher Number=${ convertVoucher((++voucherNumber).toString()) })",
+                                       notiType: 'unread',
+                                       createdDate: DateTime.now().millisecondsSinceEpoch,
+                                       sender: userId,
+                                       photo: userPhoto,
+                                     );
+                                     FirestoreService().addNoti(notiModel);
+                                   });
+
+                                   ///copying data from order to voucher
+                                   FirebaseFirestore.instance.collection("user").doc(userId).collection("order").get().then((querySnapshot) {
+                                     querySnapshot.docs.forEach((result) {
+                                       FirebaseFirestore.instance.collection('voucher')
+                                           .doc(voucherId).collection('order').doc(result.data()['order_id'])
+                                           .set(result.data());
+                                       print(result.data);
+                                     });
+                                   });
+
+                                   FirebaseFirestore.instance.collection('user').doc(userId).collection('order').get().then((snapshot) {
+                                     for (DocumentSnapshot doc in snapshot.docs) {
+                                       doc.reference.delete();
+                                     }
+                                     print("delete");
+                                   });
+
+                                   NotiService().sendNoti("အမှာစာ အသစ်" ,"$userName ထံမှအော်ဒါ လက်ခံရရှိပါသည်");
+                                   setState(() {
+                                     isLoading=false;
+                                   });
+                                   Navigator.of(context).pop();
+                                   setState(() {
+                                     totalCost=0.0;
+                                     orderCount=0;
+                                   });
+                                   Fluttertoast.showToast(msg: "မှာယူမူအတွက်  အထူးကျေးဇူးတင်ရှိပါသည်" ,toastLength: Toast.LENGTH_LONG,backgroundColor: Constants.thirdColor);
+                                 },
+                               ),
+                               FlatButton(
+                                 child: Text('မမှာယူပါ',
+                                     style: new TextStyle(
+                                         fontSize: 16.0,
+                                         color: Constants.primaryColor,
+                                         fontFamily: Constants.PrimaryFont
+                                     ),
+                                     textAlign: TextAlign.right),
+                                 onPressed: () {
+                                   Navigator.pop(context);
+                                 },
+                               )
+                             ],
+                           ),
+                         );
+
+                       },
+                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0),),
+                       padding: EdgeInsets.all(0.0),
+                       child: Ink(
+                         decoration: BoxDecoration(
+                             gradient: LinearGradient(colors: [Hexcolor('#fd9346'),Constants.primaryColor,Hexcolor('#fd9346'),],
+                               begin: Alignment.topLeft,
+                               end: Alignment.bottomRight,
+                             ),
+                             borderRadius: BorderRadius.circular(30.0)
+                         ),
+                         child: Container(
+                           constraints: BoxConstraints(minHeight: 50.0),
+                           alignment: Alignment.center,
+                           child: Text('မှာယူမည်',style: TextStyle(color: Colors.white,fontSize: 18.0,fontFamily:Constants.PrimaryFont),),
                          ),
                        ),
                      ),
-
-                    orderCount==0 || orderCount==null ? Center(child: SizedBox(child: Text('အဝယ်စာရင်း မရှိသေးပါ',style: TextStyle(color: Constants.primaryColor,fontFamily: Constants.PrimaryFont,fontSize: 16),),)):
-                    Row(
-                       mainAxisSize: MainAxisSize.max,
-                       mainAxisAlignment: MainAxisAlignment.spaceAround ,
-                       crossAxisAlignment: CrossAxisAlignment.center,
-                       children: [
-                         Expanded(
-                           flex: 3,
-                           child: Container(height: 50.0,
-                               child: Text("စုစုပေါင်း  ",textAlign: TextAlign.right,style: TextStyle(fontSize: 18,fontFamily: Constants.PrimaryFont,color: Constants.thirdColor),)),
-                         ),
-                         SizedBox(width: 10.0,),
-                         Expanded(
-                           flex: 2,
-                           child: Container(height: 50,
-                               child: Text(Constants().oCcy.format(totalCost)+" ကျပ်",style: TextStyle(color: Constants.primaryColor,fontFamily: Constants.PrimaryFont,fontWeight: FontWeight.bold,fontSize: 18),)),
-                         ),
-                       ],
-                     ),
-
-                     orderCount==0 || orderCount==null ? SizedBox( ):  isLoading==true? Container(margin: EdgeInsets.all(10),
-                    width: 50.0,
-                    height: 50.0,child: CircularProgressIndicator(backgroundColor: Constants.thirdColor,),):
-                    Container(
-                       margin: EdgeInsets.all(10),
-                       height: 50.0,
-                       child: RaisedButton(
-                         onPressed: () async {
-
-                           showDialog(
-                             context: context,
-                             builder: (context) => AlertDialog(
-                               title: Text( 'မှာယူရန် သေချာပြီလား',
-                                   style: new TextStyle(
-                                       fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
-                               actions: <Widget>[
-                                 FlatButton(
-                                   child: Text('မှာယူမည်',
-                                       style: new TextStyle(
-                                           fontSize: 16.0,
-                                           color: Constants.primaryColor,
-                                           fontFamily: Constants.PrimaryFont
-                                       ),
-                                       textAlign: TextAlign.right),
-                                   onPressed: () async {
-
+                   ),
+                   SizedBox(height: 10.0,),
+                   orderCount==0 || orderCount==null ? SizedBox( ):  isLoading==true? Container(margin: EdgeInsets.all(10),
+                     width: 50.0,
+                     height: 50.0,child: CircularProgressIndicator(backgroundColor: Constants.thirdColor,),):
+                   Container(
+                     padding: EdgeInsets.symmetric(horizontal:10),
+                     child: RaisedButton(
+                       onPressed: (){
+                         showDialog(
+                           context: context,
+                           builder: (context) => AlertDialog(
+                             title: Text( 'အဝယ်စာရင်းကိုဖျက်ရန် သေချာပြီလား?',
+                                 style: new TextStyle(
+                                     fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
+                             actions: <Widget>[
+                               FlatButton(
+                                 child: Text('ဖျက်မည်',
+                                     style: new TextStyle(
+                                       fontSize: 16.0,
+                                         color: Constants.primaryColor,
+                                         fontFamily: Constants.PrimaryFont
+                                     ),
+                                     textAlign: TextAlign.right),
+                                 onPressed: () async {
+                                   setState(() {
+                                     isLoading=true;
+                                   });
+                                   FirebaseFirestore.instance.collection('user').doc(userId).collection('order').get().then((snapshot) {
+                                     for (DocumentSnapshot doc in snapshot.docs) {
+                                       doc.reference.delete();
+                                     }
+                                     Navigator.of(context).pop();
                                      setState(() {
-                                       isLoading=true;
-                                     });
-                                     final DateTime now = DateTime.now();
-
-                                     DateFormat dateFormat = new DateFormat('dd-MM-yyyy hh:mm a');
-                                     print(dateFormat.format(now));
-                                     String voucherId=uuid.v4();
-
-                                     FirebaseFirestore.instance.collection("voucher").get().then((value){
-                                       value.docs.forEach((element) {
-                                         voucherArr.add(element.data()['voucher_number']);
-                                       });
-                                       voucherArr.sort();
-                                       print(voucherArr.last);
-                                       int voucherNumber=voucherArr.last;
-                                       VoucherModel voucherModel =VoucherModel(
-                                         searchName: Constants().setSearchParam(userName.toLowerCase()),
-                                         voucherId:voucherId,
-                                         userName: userName,
-                                         token:userToken,
-                                         dateTime: dateFormat.format(now).toString(),
-                                         status:Constants.orderPrepare,
-                                         userId: userId,
-                                         voucherNumber:(voucherNumber == null || voucherNumber == 0) ? 1: (voucherNumber+1),
-                                       );
-                                       FirestoreService().addVoucher("voucher",voucherModel );
-
-                                       NotiModel notiModel= NotiModel(
-                                         notiId: uuid.v4(),
-                                         notiTitle: "အမှာစာအသစ်",
-                                         notiText: "$userName ထံမှ အော်ဒါလက်ခံရရှိပါသည် (Voucher Number=${ convertVoucher((++voucherNumber).toString()) })",
-                                         notiType: 'unread',
-                                         createdDate: DateTime.now().millisecondsSinceEpoch,
-                                         sender: userId,
-                                         photo: userPhoto,
-                                       );
-                                       FirestoreService().addNoti(notiModel);
-                                     });
-
-                                     ///copying data from order to voucher
-                                     FirebaseFirestore.instance.collection("user").doc(userId).collection("order").get().then((querySnapshot) {
-                                       querySnapshot.docs.forEach((result) {
-                                         FirebaseFirestore.instance.collection('voucher')
-                                             .doc(voucherId).collection('order').doc(result.data()['order_id'])
-                                             .set(result.data());
-                                         print(result.data);
-                                       });
-                                     });
-
-                                     FirebaseFirestore.instance.collection('user').doc(userId).collection('order').get().then((snapshot) {
-                                       for (DocumentSnapshot doc in snapshot.docs) {
-                                         doc.reference.delete();
-                                       }
-                                       print("delete");
-                                     });
-                                     NotiService().sendNoti("အမှာစာ အသစ်" ,"$userName ထံမှအော်ဒါ လက်ခံရရှိပါသည်");
-                                     setState(() {
+                                       orderCount=0;
                                        isLoading=false;
                                      });
-                                     Navigator.of(context).pop();
-                                     setState(() {
-                                       totalCost=0.0;
-                                       orderCount=0;
-                                     });
-                                     Fluttertoast.showToast(msg: "မှာယူမူအတွက်  အထူးကျေးဇူးတင်ရှိပါသည်" ,toastLength: Toast.LENGTH_LONG,backgroundColor: Constants.thirdColor);
-                                   },
-                                 ),
-                                 FlatButton(
-                                   child: Text('မမှာယူပါ',
-                                       style: new TextStyle(
-                                           fontSize: 16.0,
-                                           color: Constants.primaryColor,
-                                           fontFamily: Constants.PrimaryFont
-                                       ),
-                                       textAlign: TextAlign.right),
-                                   onPressed: () {
-                                     Navigator.pop(context);
-                                   },
-                                 )
-                               ],
-                             ),
-                           );
 
-                         },
-                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0),),
-                         padding: EdgeInsets.all(0.0),
-                         child: Ink(
-                           decoration: BoxDecoration(
-                               gradient: LinearGradient(colors: [Hexcolor('#fd9346'),Constants.primaryColor,Hexcolor('#fd9346'),],
-                                 begin: Alignment.topLeft,
-                                 end: Alignment.bottomRight,
+                                     print("delete");
+                                   });
+                                 },
                                ),
-                               borderRadius: BorderRadius.circular(30.0)
+                               FlatButton(
+                                 child: Text('မဖျက်ပါ',
+                                     style: new TextStyle(
+                                       color: Constants.primaryColor,
+                                       fontFamily: Constants.PrimaryFont,
+                                       fontSize: 16.0,
+                                     ),
+                                     textAlign: TextAlign.right),
+                                 onPressed: () {
+                                   Navigator.of(context).pop();
+                                 },
+                               )
+                             ],
                            ),
-                           child: Container(
-                             constraints: BoxConstraints(minHeight: 50.0),
-                             alignment: Alignment.center,
-                             child: Text('မှာယူမည်',style: TextStyle(color: Colors.white,fontSize: 18.0,fontFamily:Constants.PrimaryFont),),
+                         );
+
+                       },
+                       padding: EdgeInsets.all(0.0),
+                       child: Ink(
+                         decoration: BoxDecoration(color: Colors.white),
+                         child: Container(
+                           constraints: BoxConstraints(minHeight: 50.0),
+                           alignment: Alignment.center,
+                           child: Text('အဝယ်စာရင်းကို ပယ်ဖျက်မည်', style: TextStyle(color: Constants.primaryColor,fontSize: 18.0,fontFamily:Constants.PrimaryFont),
                            ),
                          ),
                        ),
+                       textColor: Colors.white,
+                       shape: RoundedRectangleBorder(side: BorderSide(
+                           color: Constants.primaryColor,
+                           width: 1,
+                           style: BorderStyle.solid
+                       ), borderRadius: BorderRadius.circular(80)),
                      ),
-                     SizedBox(height: 10.0,),
-                     orderCount==0 || orderCount==null ? SizedBox( ):  isLoading==true? Container(margin: EdgeInsets.all(10),
-                       width: 50.0,
-                       height: 50.0,child: CircularProgressIndicator(backgroundColor: Constants.thirdColor,),):
-                     Container(
-                       padding: EdgeInsets.symmetric(horizontal:10),
-                       child: RaisedButton(
-                         onPressed: (){
-                           showDialog(
-                             context: context,
-                             builder: (context) => AlertDialog(
-                               title: Text( 'အဝယ်စာရင်းကိုဖျက်ရန် သေချာပြီလား?',
-                                   style: new TextStyle(
-                                       fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
-                               actions: <Widget>[
-                                 FlatButton(
-                                   child: Text('ဖျက်မည်',
-                                       style: new TextStyle(
-                                         fontSize: 16.0,
-                                           color: Constants.primaryColor,
-                                           fontFamily: Constants.PrimaryFont
-                                       ),
-                                       textAlign: TextAlign.right),
-                                   onPressed: () async {
-                                     setState(() {
-                                       isLoading=true;
-                                     });
-                                     FirebaseFirestore.instance.collection('user').doc(userId).collection('order').get().then((snapshot) {
-                                       for (DocumentSnapshot doc in snapshot.docs) {
-                                         doc.reference.delete();
-                                       }
-                                       Navigator.of(context).pop();
-                                       setState(() {
-                                         orderCount=0;
-                                         isLoading=false;
-                                       });
+                   ),
 
-                                       print("delete");
-                                     });
-                                   },
-                                 ),
-                                 FlatButton(
-                                   child: Text('မဖျက်ပါ',
-                                       style: new TextStyle(
-                                         color: Constants.primaryColor,
-                                         fontFamily: Constants.PrimaryFont,
-                                         fontSize: 16.0,
-                                       ),
-                                       textAlign: TextAlign.right),
-                                   onPressed: () {
-                                     Navigator.of(context).pop();
-                                   },
-                                 )
-                               ],
-                             ),
-                           );
-
-                         },
-                         padding: EdgeInsets.all(0.0),
-                         child: Ink(
-                           decoration: BoxDecoration(color: Colors.white),
-                           child: Container(
-                             constraints: BoxConstraints(minHeight: 50.0),
-                             alignment: Alignment.center,
-                             child: Text('အဝယ်စာရင်းကို ပယ်ဖျက်မည်', style: TextStyle(color: Constants.primaryColor,fontSize: 18.0,fontFamily:Constants.PrimaryFont),
-                             ),
-                           ),
-                         ),
-                         textColor: Colors.white,
-                         shape: RoundedRectangleBorder(side: BorderSide(
-                             color: Constants.primaryColor,
-                             width: 1,
-                             style: BorderStyle.solid
-                         ), borderRadius: BorderRadius.circular(80)),
-                       ),
-                     ),
-
-                   ],
-                 ),
-              ],
-            ),),
-          ),
+                 ],
+               ),
+            ],
+          ),),
         ),
       ),
     );
@@ -694,10 +684,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => HomePage()));
+            Navigator.of(context).pop();
+            Get.offAll(HomePage());
           },
         ),
         Padding(
@@ -721,10 +709,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ProductPage()));
+            Navigator.of(context).pop();
+            Get.to(ProductPage());
           },
         ),
         Padding(
@@ -741,14 +727,12 @@ class _HeaderOnlyState extends State<HeaderOnly> {
               padding: EdgeInsets.all(5.0),
               child: Image.asset('assets/image/price_list.png')),
           title: Text(
-            "စျေးနူန်းစာရင်း",
+            "စျေးနှုန်းစာရင်း",
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PricePage()));
+            Navigator.of(context).pop();
+            Get.to(PricePage());
           },
         ),
         Padding(
@@ -793,10 +777,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => VoucherPage()));
+            Navigator.of(context).pop();
+            Get.to(VoucherPage());
           },
         ),
         Padding(
@@ -817,10 +799,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ChatBox()));
+            Navigator.of(context).pop();
+            Get.to(ChatBox());
           },
         ) :Badge(
           position: BadgePosition(top: -5,end: 30),
@@ -834,10 +814,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
               style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
             ),
             onTap: () {
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ChatBox()));
+              Navigator.of(context).pop();
+              Get.to(ChatBox());
               //TODO
               FirebaseFirestore.instance.collection('user').doc(userId)
                   .update({'message_noti':0})
@@ -869,10 +847,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ContactPage()));
+            Navigator.of(context).pop();
+            Get.to(ContactPage());
           },
         ),
         Padding(
@@ -916,10 +892,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
                         if (user == null) {
                           print('User is currently signed out!');
                           pref.clear();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => LoginPage()),
-                          );
+                          Navigator.of(context).pop();
+                          Get.offAll(LoginPage());
                         } else {
                           print('User is signed in!');
                         }
@@ -999,7 +973,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
   Future _openGallary(BuildContext context) async {
 
     SharedPreferences pref=await SharedPreferences.getInstance();
-    var picture = await picker.getImage(source: ImageSource.gallery);
+    var picture = await picker.getImage(source: ImageSource.gallery,imageQuality: 50);
     File tmpFile = File(picture.path);
     userImage = tmpFile;
     Navigator.pop(context);
@@ -1037,7 +1011,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
 
   Future _openCamera(BuildContext context) async {
     SharedPreferences pref=await SharedPreferences.getInstance();
-    final picture = await picker.getImage(source: ImageSource.camera);
+    final picture = await picker.getImage(source: ImageSource.camera,imageQuality: 50);
     File tmpFile = File(picture.path);
     userImage = tmpFile;
     Navigator.pop(context);

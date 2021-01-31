@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:uni_pharmacy_order/service/firestore_service.dart';
 import 'package:uni_pharmacy_order/util/constants.dart';
@@ -50,7 +51,6 @@ class _ProductDetailState extends State<ProductDetail> {
           count=specialPriceList.length.toString();
           print(count);
         });
-
       });
     });
   }
@@ -259,10 +259,7 @@ class _ProductDetailState extends State<ProductDetail> {
               height: 50.0,
               child: RaisedButton(
                 onPressed: () async {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ProductOrder("","","",productId,productName,productImage,"","","","")),
-                  );
+                 Get.to(ProductOrder("","","",productId,productName,productImage,"","","",""),);
                 },
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0),),
                 padding: EdgeInsets.all(0.0),

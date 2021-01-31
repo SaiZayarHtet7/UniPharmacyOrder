@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:badges/badges.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:double_back_to_close/double_back_to_close.dart';
+import 'package:get/route_manager.dart';
+import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -28,13 +31,10 @@ import 'package:uni_pharmacy_order/view/chat/ChatBox.dart';
 import 'package:uni_pharmacy_order/view/contact/ContactPage.dart';
 import 'package:uni_pharmacy_order/view/notification/NotificationPage.dart';
 import 'package:uni_pharmacy_order/view/order/OrderPage.dart';
+import 'package:uni_pharmacy_order/view/product/ProductDetail.dart';
 import 'package:uni_pharmacy_order/view/product/ProductPage.dart';
 import 'package:uni_pharmacy_order/view/voucher/VoucherPage.dart';
 import 'package:uni_pharmacy_order/widget/NotiIcon.dart';
-
-var flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
-
-final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class HomePage extends StatefulWidget {
   @override
@@ -42,6 +42,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  var flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
     ///Declaration
     bool loading;
@@ -55,7 +59,7 @@ class _HomePageState extends State<HomePage> {
     int secondInDate=86400000;
     int threeDaysAgo;
     int updatedPristCount;
-    
+
     Future<bool> _onWillPop() async {
       print('hellp');
       showDialog(
@@ -122,8 +126,6 @@ class _HomePageState extends State<HomePage> {
       print('number of updated PriceCount '+updatedPristCount.toString());
     });
 
-
-    
     FirebaseFirestore.instance.collection("slide").get().then((querySnapshot) {
       querySnapshot.docs.forEach((result) {
         imgList.add(result.data()['slide'].toString());
@@ -214,9 +216,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home:WillPopScope(
-        onWillPop: _onWillPop,
+    return DoubleBack(
+        message: "Press back again to exit",
         child: MultiProvider(
           providers: [
             Provider<NetworkProvider>(
@@ -361,7 +362,7 @@ class _HomePageState extends State<HomePage> {
                                 Container(
                                   width: MediaQuery.of(context).size.width,
                                     padding: EdgeInsets.symmetric(horizontal: 15.0),
-                                    child: Text(updatedPristCount==0?'စျေးနူန်း အပြောင်းအလဲများ မရှိသေးပါ': 'စျေးနူန်း အပြောင်းအလဲများ',style: TextStyle(color: Colors.white,fontFamily: Constants.PrimaryFont),)),
+                                    child: Text(updatedPristCount==0?'စျေးနှုန်း အပြောင်းအလဲများ မရှိသေးပါ': 'စျေးနှုန်း အပြောင်းအလဲများ',style: TextStyle(color: Colors.white,fontFamily: Constants.PrimaryFont),)),
                                 Container(
                                   padding: EdgeInsets.symmetric(horizontal: 10.0),
                                   height: MediaQuery.of(context).size.height/2.55,
@@ -403,44 +404,88 @@ class _HomePageState extends State<HomePage> {
                                                     child: Column(
                                                       crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
-                                                      Text(document.data()['product_name']+" ( "+document.data()['quantity'].toString()+' '+document.data()['unit'] +" စျေး )" ,style: TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 15), ),
-                                                      Row(
-                                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                        mainAxisSize: MainAxisSize.max,
-                                                        children: [
-                                                          Column(
-                                                            children: [
-                                                              Text('ယခင်စျေး',style: TextStyle(color: Constants.primaryColor,fontSize: 15,fontFamily: Constants.PrimaryFont),
-                                                              ),
-                                                              Row(
-                                                                children: [
-                                                                  Text(document.data()['old_price'],style: TextStyle(decoration: TextDecoration.lineThrough,color: Constants.thirdColor),),Text(' ကျပ်',style: TextStyle(),)
-                                                                ],)
-                                                            ],
-                                                          ),
-                                                          Column(
-                                                            children: [
-                                                              Text('ယခုစျေး',style: TextStyle(color: Constants.primaryColor,fontSize: 15,fontFamily: Constants.PrimaryFont),
-                                                              ),
-                                                              Row(
-                                                                children: [
-                                                                  Text(document.data()['new_price'],style: TextStyle(color: Constants.thirdColor),),Text(' ကျပ်',style: TextStyle(),)
-                                                                ],)
-                                                            ],
-                                                          )
-                                                        ],
-                                                      ),
-                                                      SizedBox(height: 10,),
-                                                      Expanded(
-                                                        flex: 0,
-                                                        child: Align(
-                                                          alignment: Alignment.bottomRight,
-                                                          child: Text(format.format(DateTime.fromMicrosecondsSinceEpoch(int.parse(document.data()['created_date'].toString())*1000)).toString().substring(0,10),
-                                                            style: TextStyle(color: Colors.grey,fontSize:13),),
+                                                        Text(document.data()['product_name']+" ( "+document.data()['quantity'].toString()+' '+document.data()['unit'] +" စျေး )" ,style: TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 15), ),
+                                                        Row(
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          mainAxisSize: MainAxisSize.max,
+                                                          children: [
+                                                            Column(
+                                                              children: [
+                                                                Text('ယခင်စျေး',style: TextStyle(color: Constants.primaryColor,fontSize: 15,fontFamily: Constants.PrimaryFont),
+                                                                ),
+                                                                Row(
+                                                                  children: [
+                                                                    Text(document.data()['old_price'],style: TextStyle(decoration: TextDecoration.lineThrough,color: Constants.thirdColor),),Text(' ကျပ်',style: TextStyle(),)
+                                                                  ],)
+                                                              ],
+                                                            ),
+                                                            Column(
+                                                              children: [
+                                                                Text('ယခုစျေး',style: TextStyle(color: Constants.primaryColor,fontSize: 15,fontFamily: Constants.PrimaryFont),
+                                                                ),
+                                                                Row(
+                                                                  children: [
+                                                                    Text(document.data()['new_price'],style: TextStyle(color: Constants.thirdColor),),Text(' ကျပ်',style: TextStyle(),)
+                                                                  ],)
+                                                              ],
+                                                            )
+                                                          ],
                                                         ),
-                                                      ),
-                                                    ],),
+                                                        SizedBox(height: 10,),
+                                                        Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                            Text(format.format(DateTime.fromMicrosecondsSinceEpoch(int.parse(document.data()['created_date'].toString())*1000)).toString().substring(0,10),
+                                                              style: TextStyle(color: Colors.grey,fontSize:13),),
+                                                            RaisedButton(
+                                                              onPressed: () {
+                                                                //get data from product data
+                                                                FirebaseFirestore.instance.collection("product").doc(document.data()["product_id"]).get().then((value) {
+                                                                  print(document.data()["id"].toString());
+                                                                  Get.to(ProductDetail(value.get("product_name"), value.get("product_image"), value.get("product_id"), value.get("description")));
+                                                                });
+                                                              },
+                                                              textColor: Colors.white,
+                                                              padding: const EdgeInsets.all(0.0),
+                                                              shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(80.0)),
+                                                              child: Container(
+                                                                decoration: BoxDecoration(
+                                                                    gradient: LinearGradient(colors: [Hexcolor('#fd9346'),Constants.primaryColor,Hexcolor('#fd9346'),],
+                                                                      begin: Alignment.topLeft,
+                                                                      end: Alignment.bottomRight,
+                                                                    ),
+                                                                    borderRadius: BorderRadius.circular(30.0)
+                                                                ),
+                                                                padding: EdgeInsets.fromLTRB(15, 0, 10, 0),
+                                                                child: Row(
+                                                                  children: [
+                                                                    Container(
+                                                                      margin: EdgeInsets.symmetric(vertical: 4.7),
+                                                                      child: const Text(
+                                                                          'ကြည့်မည်',
+                                                                          style: TextStyle(fontSize: 12)
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(width: 5,),
+                                                                    Padding(
+                                                                      padding: const EdgeInsets.all(0.0),
+                                                                      child: Container(
+                                                                          height: 20,
+                                                                          decoration:BoxDecoration(
+                                                                            borderRadius: BorderRadius.circular(10),
+                                                                            color: Colors.white,
+                                                                          ),
+                                                                          child: Icon(Icons.chevron_right,color:Constants.primaryColor,size: 20,)
+                                                                      ),
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ],),
                                                   ),
 
                                                 ],
@@ -523,7 +568,7 @@ class _HomePageState extends State<HomePage> {
                                   //     ),
                                   //   ],
                                   // ),
-                                )
+                                ),
                               ],
                             ),
                           );
@@ -535,8 +580,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -650,7 +694,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
               style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
             ),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             },
           ),
         ),
@@ -672,10 +716,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ProductPage()));
+            Navigator.of(context).pop();
+            Get.to(ProductPage());
           },
         ),
         Padding(
@@ -692,14 +734,12 @@ class _HeaderOnlyState extends State<HeaderOnly> {
               padding: EdgeInsets.all(5.0),
               child: Image.asset('assets/image/price_list.png')),
           title: Text(
-            "စျေးနူန်းစာရင်း",
+            "စျေးနှုန်းစာရင်း",
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PricePage()));
+            Navigator.of(context).pop();
+           Get.to( PricePage());
           },
         ),
         Padding(
@@ -720,10 +760,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => OrderPage()));
+            Navigator.of(context).pop();
+            Get.to(OrderPage());
           },
         ),
         Padding(
@@ -744,10 +782,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => VoucherPage()));
+            Navigator.of(context).pop();
+            Get.to(VoucherPage());
           },
         ),
         Padding(
@@ -768,10 +804,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
            style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
          ),
          onTap: () {
-           Navigator.pushReplacement(
-               context,
-               MaterialPageRoute(
-                   builder: (context) => ChatBox()));
+           Navigator.of(context).pop();
+           Get.to(ChatBox());
          },
        ) :Badge(
           position: BadgePosition(top: -5,end: 30),
@@ -785,10 +819,9 @@ class _HeaderOnlyState extends State<HeaderOnly> {
               style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
             ),
             onTap: () {
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ChatBox()));
+              Navigator.of(context).pop();
+              Get.to(ChatBox());
+              //to change the noti to Zero
               FirebaseFirestore.instance.collection('user').doc(userId)
                   .update({'message_noti':0})
                   .then((value) => print("User Updated"))
@@ -819,10 +852,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ContactPage()));
+            Navigator.of(context).pop();
+            Get.to(ContactPage());
           },
         ),
         Padding(
@@ -866,10 +897,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
                         if (user == null) {
                           print('User is currently signed out!');
                           pref.clear();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => LoginPage()),
-                          );
+                          Navigator.of(context).pop();
+                          Get.offAll(LoginPage());
                         } else {
                           print('User is signed in!');
                         }
@@ -951,7 +980,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
   Future _openGallary(BuildContext context) async {
 
     SharedPreferences pref=await SharedPreferences.getInstance();
-    var picture = await picker.getImage(source: ImageSource.gallery);
+    var picture = await picker.getImage(source: ImageSource.gallery,imageQuality: 50);
     File tmpFile = File(picture.path);
     userImage = tmpFile;
     Navigator.pop(context);
@@ -989,7 +1018,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
 
   Future _openCamera(BuildContext context) async {
     SharedPreferences pref=await SharedPreferences.getInstance();
-    final picture = await picker.getImage(source: ImageSource.camera);
+    final picture = await picker.getImage(source: ImageSource.camera,imageQuality: 50);
     File tmpFile = File(picture.path);
     userImage = tmpFile;
     Navigator.pop(context);

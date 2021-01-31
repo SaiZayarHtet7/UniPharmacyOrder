@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_pharmacy_order/service/firebase_storage.dart';
@@ -120,9 +121,9 @@ class _ShowProductState extends State<ShowProduct> {
               margin:  EdgeInsets.only(top: 70),
               child:StreamBuilder<QuerySnapshot>(
                   stream: (searchName=="" || searchName==null) ? FirebaseFirestore.instance
-                      .collection('product').where("category", isEqualTo : categoryName).snapshots():
+                      .collection('product').where("category", isEqualTo : categoryName).orderBy('product_name').snapshots():
                   FirebaseFirestore.instance
-                      .collection('product').where("category",isEqualTo: categoryName).where("product_search", arrayContains : searchName) .snapshots(),
+                      .collection('product').where("category",isEqualTo: categoryName).where("product_search", arrayContains : searchName).orderBy('product_name') .snapshots(),
                   builder: (BuildContext context,
                       AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.hasError) {
@@ -143,7 +144,7 @@ class _ShowProductState extends State<ShowProduct> {
                             (DocumentSnapshot document) =>
                                 InkWell(
                                   onTap: (){
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductDetail(document.data()['product_name'],document.data()['product_image'],  document.data()['product_id'], document.data()['description'])));
+                                    Get.to( ProductDetail(document.data()['product_name'],document.data()['product_image'],  document.data()['product_id'], document.data()['description']));
                                   },
                                   child: ProductCard(
                             document.data()['product_id'],
@@ -173,10 +174,11 @@ class _HeaderOnlyState extends State<HeaderOnly> {
   String userPhoto;
   String phoneNumber;
   String address;
-  String userId,messageNoti;
+  String userId,messageNoti ;
   bool loading;
   final picker = ImagePicker();
   File userImage;
+
 
   @override
   void initState() {
@@ -193,6 +195,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
     phoneNumber= pref.getString('phone_number');
     address= pref.getString('address');
     userId= pref.getString('uid');
+
     FirebaseFirestore.instance.collection("user").doc(userId).get().then((DocumentSnapshot document) {
       int notiCount=int.parse(document.data()['message_noti'].toString());
       print("notiCOunt"+notiCount.toString());
@@ -200,6 +203,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
         messageNoti=notiCount.toString();
       });
     });
+
+
     setState(() {
       loading=false;
     });
@@ -208,7 +213,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: messageNoti==null? Center(child: CircularProgressIndicator()): ListView(children: <Widget>[
+      child: messageNoti==null? Center(child: CircularProgressIndicator()):  ListView(children: <Widget>[
         DrawerHeader(
           decoration: BoxDecoration(
               color: Constants.primaryColor
@@ -264,10 +269,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => HomePage()));
+            Navigator.of(context).pop();
+            Get.offAll(HomePage());
           },
         ),
         Padding(
@@ -314,10 +317,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PricePage()));
+            Navigator.of(context).pop();
+            Get.to(PricePage());
           },
         ),
         Padding(
@@ -338,10 +339,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => OrderPage()));
+            Navigator.of(context).pop();
+            Get.to(OrderPage());
           },
         ),
         Padding(
@@ -362,10 +361,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => VoucherPage()));
+            Navigator.of(context).pop();
+            Get.to(VoucherPage());
           },
         ),
         Padding(
@@ -386,10 +383,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ChatBox()));
+            Navigator.of(context).pop();
+            Get.to(ChatBox());
           },
         ) :Badge(
           position: BadgePosition(top: -5,end: 30),
@@ -403,10 +398,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
               style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
             ),
             onTap: () {
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ChatBox()));
+              Navigator.of(context).pop();
+              Get.to(ChatBox());
               //TODO
               FirebaseFirestore.instance.collection('user').doc(userId)
                   .update({'message_noti':0})
@@ -438,10 +431,8 @@ class _HeaderOnlyState extends State<HeaderOnly> {
             style: new TextStyle(fontFamily: Constants.PrimaryFont,fontSize: 14.0),
           ),
           onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => ContactPage()));
+            Navigator.of(context).pop();
+            Get.to(ContactPage());
           },
         ),
         Padding(
@@ -462,58 +453,53 @@ class _HeaderOnlyState extends State<HeaderOnly> {
           ),
           onTap: () async {
             showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text( 'Account မှထွက်ရန် သေချာပြီလား?',
-                  style: new TextStyle(
-                      fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text('ထွက်မည်',
-                      style: new TextStyle(
-                          fontSize: 16.0,
-                          color: Constants.primaryColor,
-                          fontFamily: Constants.PrimaryFont
-                      ),
-                      textAlign: TextAlign.right),
-                  onPressed: () async {
-                    SharedPreferences pref= await SharedPreferences .getInstance();
-                    await FirebaseAuth.instance.signOut();
-                    FirebaseAuth.instance
-                        .authStateChanges()
-                        .listen((User user) {
-                      if (user == null) {
-                        print('User is currently signed out!');
-                        pref.clear();
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),
-                        );
-                      } else {
-                        print('User is signed in!');
-                      }
-                    });
-                  },
-                ),
-                FlatButton(
-                  child: Text('မထွက်ပါ',
-                      style: new TextStyle(
-                          fontSize: 16.0,
-                          color: Constants.primaryColor,
-                          fontFamily: Constants.PrimaryFont
-                      ),
-                      textAlign: TextAlign.right),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                )
-              ],
-            ),
-          );
-            // Navigator.pushReplacement(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (context) => HomePage()));
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text( 'Account မှထွက်ရန် သေချာပြီလား?',
+                    style: new TextStyle(
+                        fontSize: 20.0, color: Constants.thirdColor,fontFamily: Constants.PrimaryFont)),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('ထွက်မည်',
+                        style: new TextStyle(
+                            fontSize: 16.0,
+                            color: Constants.primaryColor,
+                            fontFamily: Constants.PrimaryFont
+                        ),
+                        textAlign: TextAlign.right),
+                    onPressed: () async {
+                      SharedPreferences pref= await SharedPreferences .getInstance();
+                      await FirebaseAuth.instance.signOut();
+                      FirebaseAuth.instance
+                          .authStateChanges()
+                          .listen((User user) {
+                        if (user == null) {
+                          print('User is currently signed out!');
+                          pref.clear();
+                          Navigator.of(context).pop();
+                          Get.offAll(LoginPage());
+                        } else {
+                          print('User is signed in!');
+                        }
+                      });
+                    },
+                  ),
+                  FlatButton(
+                    child: Text('မထွက်ပါ',
+                        style: new TextStyle(
+                            fontSize: 16.0,
+                            color: Constants.primaryColor,
+                            fontFamily: Constants.PrimaryFont
+                        ),
+                        textAlign: TextAlign.right),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  )
+                ],
+              ),
+            );
+
           },
         ),
         Padding(
@@ -568,7 +554,7 @@ class _HeaderOnlyState extends State<HeaderOnly> {
   Future _openGallary(BuildContext context) async {
 
     SharedPreferences pref=await SharedPreferences.getInstance();
-    var picture = await picker.getImage(source: ImageSource.gallery);
+    var picture = await picker.getImage(source: ImageSource.gallery,imageQuality: 50);
     File tmpFile = File(picture.path);
     userImage = tmpFile;
     Navigator.pop(context);
@@ -603,10 +589,9 @@ class _HeaderOnlyState extends State<HeaderOnly> {
     });
   }
 
-
   Future _openCamera(BuildContext context) async {
     SharedPreferences pref=await SharedPreferences.getInstance();
-    final picture = await picker.getImage(source: ImageSource.camera);
+    final picture = await picker.getImage(source: ImageSource.camera,imageQuality: 50);
     File tmpFile = File(picture.path);
     userImage = tmpFile;
     Navigator.pop(context);

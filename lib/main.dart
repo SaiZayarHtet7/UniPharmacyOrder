@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_splash/flutter_splash.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_pharmacy_order/util/constants.dart';
 import 'package:uni_pharmacy_order/view/HomePage.dart';
@@ -15,7 +16,7 @@ Future<void> main() async {
   String userName=preferences.getString('user_name');
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-      MaterialApp(home:
+      GetMaterialApp(home:
       Splash(
         seconds: 3,
         navigateAfterSeconds: userName == null ? LoginPage() : HomePage(),
