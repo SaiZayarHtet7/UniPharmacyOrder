@@ -404,7 +404,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin{
                                     height: 100.0,
                                   ),
                                   Text(
-                                    'Version 1.1.0',
+                                    'Version 1.1.1',
                                     style:
                                     TextStyle(color: Constants.primaryColor, fontSize: 20),
                                   ),
